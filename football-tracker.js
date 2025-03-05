@@ -3,7 +3,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Match state
     let matchState = {
         isMatchStarted: false,
+        isMatchEnded: false,
         startTime: null,
+        endTime: null,
         elapsedTime: "00:00",
         teamA: {
             name: "ทีม A",
@@ -11,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
             cards: [],
             substitutions: [],
             subWindows: 0, // Track number of substitution windows used (max 3)
+            score: 0 // Track score for team A
         },
         teamB: {
             name: "ทีม B",
@@ -18,6 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
             cards: [],
             substitutions: [],
             subWindows: 0, // Track number of substitution windows used (max 3)
+            score: 0 // Track score for team B
         },
         isInjuryTimeActive: false,
         totalInjurySeconds: 0,
@@ -45,6 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const injuryControlsEl = document.getElementById('injuryControls');
     const injuryBtn = document.getElementById('injuryBtn');
     const injuryFab = document.getElementById('injuryFab');
+    const endMatchBtn = document.getElementById('endMatchBtn'); // End match button
     const teamAHeader = document.getElementById('teamAHeader');
     const teamBHeader = document.getElementById('teamBHeader');
 
@@ -121,6 +126,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const injurySummaryContent = document.getElementById('injurySummaryContent');
     const closeInjurySummaryBtn = document.getElementById('closeInjurySummaryBtn');
     const closeInjurySummaryConfirmBtn = document.getElementById('closeInjurySummaryConfirmBtn');
+    
+    // Match End Modal
+    const matchEndModal = document.getElementById('matchEndModal');
+    const matchEndContent = document.getElementById('matchEndContent');
+    const closeMatchEndBtn = document.getElementById('closeMatchEndBtn');
+    const generatePdfBtn = document.getElementById('generatePdfBtn');
+    const teamAScoreInput = document.getElementById('teamAScoreInput');
+    const teamBScoreInput = document.getElementById('teamBScoreInput');
 
     // Reset Confirmation Modal
     const resetConfirmModal = document.getElementById('resetConfirmModal');
@@ -188,6 +201,7 @@ document.addEventListener('DOMContentLoaded', function() {
         startMatchBtn.addEventListener('click', startMatch);
         injuryBtn.addEventListener('click', toggleInjuryTime);
         injuryFab.addEventListener('click', toggleInjuryTime);
+        endMatchBtn.addEventListener('click', endMatch);
         
         // Team A buttons
         teamAYellowBtn.addEventListener('click', () => showCardDialog(true, true));
@@ -296,6 +310,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         confirmResetBtn.addEventListener('click', resetAllData);
+        
+        // Match End Modal
+        closeMatchEndBtn.addEventListener('click', () => {
+            matchEndModal.style.display = 'none';
+        });
+        
+        generatePdfBtn.addEventListener('click', generateMatchSummaryPDF);
     }
 
     // Initialize color pickers
@@ -470,14 +491,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Show/hide match controls based on match state
-        if (matchState.isMatchStarted) {
+        if (matchState.isMatchStarted && !matchState.isMatchEnded) {
             matchControlsEl.style.display = 'none';
             injuryControlsEl.style.display = 'flex';
             injuryFab.style.display = 'flex';
+            endMatchBtn.style.display = 'block';
+        } else if (matchState.isMatchEnded) {
+            matchControlsEl.style.display = 'none';
+            injuryControlsEl.style.display = 'none';
+            injuryFab.style.display = 'none';
+            endMatchBtn.style.display = 'none';
+            // Maybe show a summary button instead
         } else {
             matchControlsEl.style.display = 'flex';
             injuryControlsEl.style.display = 'none';
             injuryFab.style.display = 'none';
+            endMatchBtn.style.display = 'none';
         }
         
         // Render team cards and substitutions
@@ -1304,6 +1333,232 @@ document.addEventListener('DOMContentLoaded', function() {
     window.editSubstitutionWindow = function(windowId, isTeamA) {
         showSubstitutionDialog(isTeamA, windowId);
     };
+
+    // End match function
+    function endMatch() {
+        if (!matchState.isMatchStarted) {
+            alert('โปรดเริ่มการแข่งขันก่อน');
+            return;
+        }
+        
+        // Stop all timers
+        clearInterval(matchTimer);
+        clearInterval(injuryTimer);
+        
+        // Set match as ended
+        matchState.isMatchEnded = true;
+        matchState.endTime = new Date();
+        
+        // Calculate total match time
+        const totalMatchSeconds = Math.floor((matchState.endTime - matchState.startTime) / 1000);
+        const totalMatchMinutes = Math.floor(totalMatchSeconds / 60);
+        const totalMatchSecondsRemainder = totalMatchSeconds % 60;
+        
+        // Final match time display
+        matchState.finalMatchTime = `${String(totalMatchMinutes).padStart(2, '0')}:${String(totalMatchSecondsRemainder).padStart(2, '0')}`;
+        
+        // Update UI
+        updateUI();
+        
+        // Show match end modal
+        showMatchEndModal();
+        
+        // Save data
+        saveMatchData();
+    }
+    
+    // Show match end modal
+    function showMatchEndModal() {
+        // Set initial score values
+        teamAScoreInput.value = matchState.teamA.score || 0;
+        teamBScoreInput.value = matchState.teamB.score || 0;
+        
+        // Display team names
+        document.getElementById('teamAScoreLabel').textContent = `${matchState.teamA.name} คะแนน:`;
+        document.getElementById('teamBScoreLabel').textContent = `${matchState.teamB.name} คะแนน:`;
+        
+        // Show modal
+        matchEndModal.style.display = 'flex';
+    }
+    
+    // Generate PDF summary
+    function generateMatchSummaryPDF() {
+        // Get final scores
+        matchState.teamA.score = parseInt(teamAScoreInput.value) || 0;
+        matchState.teamB.score = parseInt(teamBScoreInput.value) || 0;
+        
+        // Save before generating PDF
+        saveMatchData();
+        
+        // Create PDF using jsPDF (need to include in HTML)
+        if (typeof jspdf === 'undefined') {
+            alert('กรุณารอสักครู่ กำลังโหลด PDF generator...');
+            
+            // Add jsPDF script dynamically
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+            script.onload = function() {
+                // Add html2canvas script dynamically
+                const canvasScript = document.createElement('script');
+                canvasScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                canvasScript.onload = actuallyGeneratePDF;
+                document.head.appendChild(canvasScript);
+            };
+            document.head.appendChild(script);
+        } else {
+            actuallyGeneratePDF();
+        }
+    }
+    
+    function actuallyGeneratePDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        // Set font for Thai language support
+        doc.setFont('helvetica', 'normal');
+        
+        // Add PDF title
+        doc.setFontSize(20);
+        doc.text('รายงานสรุปการแข่งขัน', 105, 20, { align: 'center' });
+        
+        // Add match date
+        const matchDate = matchState.startTime ? new Date(matchState.startTime).toLocaleDateString('th-TH') : 'ไม่ระบุ';
+        doc.setFontSize(12);
+        doc.text(`วันที่: ${matchDate}`, 20, 30);
+        
+        // Add team names and scores
+        doc.setFontSize(16);
+        const scoreText = `${matchState.teamA.name} ${matchState.teamA.score} - ${matchState.teamB.score} ${matchState.teamB.name}`;
+        doc.text(scoreText, 105, 40, { align: 'center' });
+        
+        // Add match duration
+        doc.setFontSize(12);
+        doc.text(`ระยะเวลาการแข่งขัน: ${matchState.finalMatchTime}`, 20, 50);
+        doc.text(`เวลาทดเจ็บรวม: ${getTotalInjuryTimeDisplay()}`, 20, 60);
+        
+        // Section: Yellow/Red cards
+        let yPos = 70;
+        doc.setFontSize(14);
+        doc.text('ใบเตือนและใบเหลือง', 20, yPos);
+        yPos += 10;
+        
+        // Team A cards
+        if (matchState.teamA.cards.length > 0) {
+            doc.setFontSize(12);
+            doc.text(`${matchState.teamA.name}:`, 20, yPos);
+            yPos += 6;
+            
+            matchState.teamA.cards.forEach(card => {
+                doc.setFontSize(10);
+                doc.text(`• ${card.isYellow ? 'ใบเหลือง' : 'ใบแดง'} - ผู้เล่นหมายเลข ${card.playerNumber} (เวลา: ${card.timeStamp})`, 30, yPos);
+                yPos += 6;
+            });
+        }
+        
+        // Team B cards
+        if (matchState.teamB.cards.length > 0) {
+            doc.setFontSize(12);
+            doc.text(`${matchState.teamB.name}:`, 20, yPos);
+            yPos += 6;
+            
+            matchState.teamB.cards.forEach(card => {
+                doc.setFontSize(10);
+                doc.text(`• ${card.isYellow ? 'ใบเหลือง' : 'ใบแดง'} - ผู้เล่นหมายเลข ${card.playerNumber} (เวลา: ${card.timeStamp})`, 30, yPos);
+                yPos += 6;
+            });
+        }
+        
+        // Add some spacing
+        yPos += 5;
+        
+        // Check if we need a new page
+        if (yPos > 250) {
+            doc.addPage();
+            yPos = 20;
+        }
+        
+        // Section: Substitutions
+        doc.setFontSize(14);
+        doc.text('การเปลี่ยนตัว', 20, yPos);
+        yPos += 10;
+        
+        // Helper function to group subs by window
+        function addTeamSubstitutions(team, teamName) {
+            // Group substitutions by window
+            const windows = {};
+            team.substitutions.forEach(sub => {
+                const windowId = sub.windowId || sub.id;
+                if (!windows[windowId]) {
+                    windows[windowId] = {
+                        id: windowId,
+                        subs: [],
+                        timeStamp: sub.timeStamp
+                    };
+                }
+                windows[windowId].subs.push(sub);
+            });
+            
+            // Convert to array and sort
+            const sortedWindows = Object.values(windows).sort((a, b) => a.timeStamp.localeCompare(b.timeStamp));
+            
+            if (sortedWindows.length > 0) {
+                doc.setFontSize(12);
+                doc.text(`${teamName}:`, 20, yPos);
+                yPos += 6;
+                
+                sortedWindows.forEach((window, index) => {
+                    doc.setFontSize(10);
+                    doc.text(`• ช่วงเปลี่ยนตัวที่ ${index + 1} (เวลา: ${window.timeStamp}):`, 30, yPos);
+                    yPos += 5;
+                    
+                    window.subs.forEach(sub => {
+                        doc.text(`  - ผู้เล่นหมายเลข ${sub.playerInNumber} เข้า, ผู้เล่นหมายเลข ${sub.playerOutNumber} ออก`, 40, yPos);
+                        yPos += 5;
+                    });
+                    
+                    yPos += 2;
+                });
+            }
+            
+            return yPos > 250;
+        }
+        
+        // Team A subs
+        if (matchState.teamA.substitutions.length > 0) {
+            if (addTeamSubstitutions(matchState.teamA, matchState.teamA.name)) {
+                doc.addPage();
+                yPos = 20;
+            }
+        }
+        
+        // Team B subs
+        if (matchState.teamB.substitutions.length > 0) {
+            if (addTeamSubstitutions(matchState.teamB, matchState.teamB.name)) {
+                doc.addPage();
+                yPos = 20;
+            }
+        }
+        
+        // Add signature lines
+        yPos += 20;
+        doc.line(20, yPos, 80, yPos);
+        doc.line(120, yPos, 180, yPos);
+        yPos += 5;
+        doc.text('ผู้ตัดสิน', 50, yPos, { align: 'center' });
+        doc.text('ผู้จดบันทึก', 150, yPos, { align: 'center' });
+        
+        // Save PDF
+        const matchDateFormatted = matchState.startTime ? new Date(matchState.startTime).toLocaleDateString('th-TH').replace(/\//g, '-') : 'unknown-date';
+        const filename = `football-match-${matchState.teamA.name}-vs-${matchState.teamB.name}-${matchDateFormatted}.pdf`;
+        
+        doc.save(filename);
+        
+        // Display success message
+        alert(`บันทึก PDF สำเร็จ: ${filename}`);
+        
+        // Close modal
+        matchEndModal.style.display = 'none';
+    }
 
     // Initialize the app
     init();
