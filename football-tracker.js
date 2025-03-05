@@ -336,7 +336,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (matchState.teamA.subWindows >= 3 && !matchState.activeSubWindow.teamA) {
                 teamASubBtn.disabled = true;
                 teamASubBtn.classList.add('disabled');
-                teamASubBtn.innerHTML = 'ใช้โควต้า�หมดแล้ว';
+                teamASubBtn.innerHTML = 'ใช้โควต้าสิ้นสุด';
             } else {
                 teamASubBtn.disabled = false;
                 teamASubBtn.classList.remove('disabled');
@@ -346,7 +346,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (matchState.teamB.subWindows >= 3 && !matchState.activeSubWindow.teamB) {
                 teamBSubBtn.disabled = true;
                 teamBSubBtn.classList.add('disabled');
-                teamBSubBtn.innerHTML = 'ใช้โควต้าหมดแล้ว';
+                teamBSubBtn.innerHTML = 'ใช้โควต้าสิ้นสุด';
             } else {
                 teamBSubBtn.disabled = false;
                 teamBSubBtn.classList.remove('disabled');
@@ -892,76 +892,174 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function exportToPDF() {
         const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
+        const doc = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+        });
 
-        doc.setFontSize(18);
-        doc.text('สรุปผลการแข่งขันฟุตบอล', 105, 20, { align: 'center' });
+        // ตั้งค่าฟอนต์เริ่มต้น
+        doc.setFontSize(16);
+        doc.setFont("helvetica", "bold");
+        doc.text('รายงานผลการแข่งขันฟุตบอล', 105, 15, { align: 'center' });
 
+        // ข้อมูลทั่วไป
         doc.setFontSize(12);
-        doc.text(`วันที่: ${new Date().toLocaleDateString('th-TH')}`, 20, 40);
-        doc.text(`เวลาแข่งขัน: ${matchState.elapsedTime}`, 20, 50);
-        doc.text(`เวลาทดบาดเจ็บทั้งหมด: ${getTotalInjuryTimeDisplay()}`, 20, 60);
+        doc.setFont("helvetica", "normal");
+        doc.text(`วันที่: ${new Date().toLocaleDateString('th-TH')}`, 20, 25);
+        doc.text(`เวลาแข่งขัน: ${matchState.elapsedTime}`, 20, 32);
+        doc.text(`เวลาทดบาดเจ็บทั้งหมด: ${getTotalInjuryTimeDisplay()}`, 20, 39);
 
+        // เส้นแบ่ง
+        doc.setLineWidth(0.5);
+        doc.line(20, 45, 190, 45);
+
+        // หัวข้อทีม A
+        let yPos = 50;
         doc.setFontSize(14);
-        doc.setTextColor(25, 118, 210);
-        doc.text(matchState.teamA.name, 20, 80);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(25, 118, 210); // สีน้ำเงินสำหรับ Team A
+        doc.text(matchState.teamA.name, 20, yPos);
         doc.setTextColor(0, 0, 0);
+        yPos += 10;
+
+        // ใบเตือน Team A
         doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text('ใบเตือน', 20, yPos);
+        yPos += 7;
 
-        doc.text('ใบเตือน:', 20, 90);
-        let yPos = 100;
-        matchState.teamA.cards.forEach((card, index) => {
-            doc.text(`${index + 1}. ${card.isYellow ? 'ใบเหลือง' : 'ใบแดง'} - ผู้เล่น #${card.playerNumber} (เวลา: ${card.timeStamp})`, 
-                25, yPos);
-            yPos += 10;
-        });
-
-        yPos += 5;
-        doc.text('การเปลี่ยนตัว:', 20, yPos);
-        yPos += 10;
-        const teamASubWindows = groupSubstitutionsByWindow(matchState.teamA.substitutions);
-        teamASubWindows.forEach((window, index) => {
-            doc.text(`ช่วงที่ ${index + 1} (เวลา: ${window.timeStamp}):`, 25, yPos);
-            yPos += 10;
-            window.substitutions.forEach(sub => {
-                doc.text(`เข้า: #${sub.playerInNumber} ออก: #${sub.playerOutNumber}`, 30, yPos);
-                yPos += 10;
+        if (matchState.teamA.cards.length > 0) {
+            doc.setFont("helvetica", "normal");
+            doc.autoTable({
+                startY: yPos,
+                head: [['ลำดับ', 'ประเภท', 'ผู้เล่น', 'เวลา']],
+                body: matchState.teamA.cards.map((card, index) => [
+                    index + 1,
+                    card.isYellow ? 'ใบเหลือง' : 'ใบแดง',
+                    `#${card.playerNumber}`,
+                    card.timeStamp
+                ]),
+                theme: 'grid',
+                headStyles: { fillColor: [25, 118, 210], textColor: 255 },
+                margin: { left: 20, right: 20 },
+                styles: { fontSize: 10, cellPadding: 2 }
             });
-        });
-
-        doc.setFontSize(14);
-        doc.setTextColor(211, 47, 47);
-        doc.text(matchState.teamB.name, 20, yPos + 10);
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(12);
-
-        yPos += 20;
-        doc.text('ใบเตือน:', 20, yPos);
-        yPos += 10;
-        matchState.teamB.cards.forEach((card, index) => {
-            doc.text(`${index + 1}. ${card.isYellow ? 'ใบเหลือง' : 'ใบแดง'} - ผู้เล่น #${card.playerNumber} (เวลา: ${card.timeStamp})`, 
-                25, yPos);
+            yPos = doc.lastAutoTable.finalY + 10;
+        } else {
+            doc.setFont("helvetica", "normal");
+            doc.text('ไม่มีใบเตือน', 25, yPos);
             yPos += 10;
-        });
-
-        yPos += 5;
-        doc.text('การเปลี่ยนตัว:', 20, yPos);
-        yPos += 10;
-        const teamBSubWindows = groupSubstitutionsByWindow(matchState.teamB.substitutions);
-        teamBSubWindows.forEach((window, index) => {
-            doc.text(`ช่วงที่ ${index + 1} (เวลา: ${window.timeStamp}):`, 25, yPos);
-            yPos += 10;
-            window.substitutions.forEach(sub => {
-                doc.text(`เข้า: #${sub.playerInNumber} ออก: #${sub.playerOutNumber}`, 30, yPos);
-                yPos += 10;
-            });
-        });
-
-        if (yPos > 280) {
-            doc.addPage();
-            yPos = 20;
         }
 
+        // การเปลี่ยนตัว Team A
+        doc.setFont("helvetica", "bold");
+        doc.text('การเปลี่ยนตัว', 20, yPos);
+        yPos += 7;
+
+        const teamASubWindows = groupSubstitutionsByWindow(matchState.teamA.substitutions);
+        if (teamASubWindows.length > 0) {
+            teamASubWindows.forEach((window, index) => {
+                doc.setFont("helvetica", "normal");
+                doc.text(`ช่วงที่ ${index + 1} (เวลา: ${window.timeStamp})`, 25, yPos);
+                yPos += 7;
+                doc.autoTable({
+                    startY: yPos,
+                    head: [['เข้า', 'ออก']],
+                    body: window.substitutions.map(sub => [`#${sub.playerInNumber}`, `#${sub.playerOutNumber}`]),
+                    theme: 'grid',
+                    headStyles: { fillColor: [25, 118, 210], textColor: 255 },
+                    margin: { left: 25, right: 20 },
+                    styles: { fontSize: 10, cellPadding: 2 }
+                });
+                yPos = doc.lastAutoTable.finalY + 10;
+            });
+        } else {
+            doc.setFont("helvetica", "normal");
+            doc.text('ไม่มีการเปลี่ยนตัว', 25, yPos);
+            yPos += 10;
+        }
+
+        // เส้นแบ่ง
+        doc.setLineWidth(0.5);
+        doc.line(20, yPos, 190, yPos);
+        yPos += 10;
+
+        // หัวข้อทีม B
+        doc.setFontSize(14);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(211, 47, 47); // สีแดงสำหรับ Team B
+        doc.text(matchState.teamB.name, 20, yPos);
+        doc.setTextColor(0, 0, 0);
+        yPos += 10;
+
+        // ใบเตือน Team B
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text('ใบเตือน', 20, yPos);
+        yPos += 7;
+
+        if (matchState.teamB.cards.length > 0) {
+            doc.setFont("helvetica", "normal");
+            doc.autoTable({
+                startY: yPos,
+                head: [['ลำดับ', 'ประเภท', 'ผู้เล่น', 'เวลา']],
+                body: matchState.teamB.cards.map((card, index) => [
+                    index + 1,
+                    card.isYellow ? 'ใบเหลือง' : 'ใบแดง',
+                    `#${card.playerNumber}`,
+                    card.timeStamp
+                ]),
+                theme: 'grid',
+                headStyles: { fillColor: [211, 47, 47], textColor: 255 },
+                margin: { left: 20, right: 20 },
+                styles: { fontSize: 10, cellPadding: 2 }
+            });
+            yPos = doc.lastAutoTable.finalY + 10;
+        } else {
+            doc.setFont("helvetica", "normal");
+            doc.text('ไม่มีใบเตือน', 25, yPos);
+            yPos += 10;
+        }
+
+        // การเปลี่ยนตัว Team B
+        doc.setFont("helvetica", "bold");
+        doc.text('การเปลี่ยนตัว', 20, yPos);
+        yPos += 7;
+
+        const teamBSubWindows = groupSubstitutionsByWindow(matchState.teamB.substitutions);
+        if (teamBSubWindows.length > 0) {
+            teamBSubWindows.forEach((window, index) => {
+                doc.setFont("helvetica", "normal");
+                doc.text(`ช่วงที่ ${index + 1} (เวลา: ${window.timeStamp})`, 25, yPos);
+                yPos += 7;
+                doc.autoTable({
+                    startY: yPos,
+                    head: [['เข้า', 'ออก']],
+                    body: window.substitutions.map(sub => [`#${sub.playerInNumber}`, `#${sub.playerOutNumber}`]),
+                    theme: 'grid',
+                    headStyles: { fillColor: [211, 47, 47], textColor: 255 },
+                    margin: { left: 25, right: 20 },
+                    styles: { fontSize: 10, cellPadding: 2 }
+                });
+                yPos = doc.lastAutoTable.finalY + 10;
+            });
+        } else {
+            doc.setFont("helvetica", "normal");
+            doc.text('ไม่มีการเปลี่ยนตัว', 25, yPos);
+            yPos += 10;
+        }
+
+        // เพิ่มหมายเลขหน้า
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(`หน้า ${i} จาก ${pageCount}`, 190, 287, { align: 'right' });
+        }
+
+        // บันทึกไฟล์
         const fileName = `Match_Report_${matchState.teamA.name}_vs_${matchState.teamB.name}_${new Date().toISOString().split('T')[0]}.pdf`;
         doc.save(fileName);
     }
