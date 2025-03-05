@@ -1,4 +1,3 @@
-// Add this script at the bottom of the HTML file
 document.addEventListener('DOMContentLoaded', function() {
     // Match state
     let matchState = {
@@ -109,17 +108,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const cancelSubBtn = document.getElementById('cancelSubBtn');
     const closeSubModalBtn = document.getElementById('closeSubModalBtn');
     const subModalActions = document.getElementById('subModalActions');
-
-    // New: Add Another Player Substitution section
-    const addAnotherSubSection = document.createElement('div');
-    addAnotherSubSection.innerHTML = `
-        <div class="input-group" id="additionalSubsContainer">
-            <!-- Additional player substitutions will be added here -->
-        </div>
-        <button class="modal-btn add-btn" id="addAnotherSubBtn">
-            <i class="fas fa-plus"></i> เพิ่มผู้เล่นที่จะเปลี่ยนตัว
-        </button>
-    `;
+    const addAnotherSubBtn = document.getElementById('addAnotherSubBtn');
+    const additionalSubsContainer = document.getElementById('additionalSubsContainer');
 
     // Injury Summary Modal
     const injurySummaryModal = document.getElementById('injurySummaryModal');
@@ -131,6 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const matchEndModal = document.getElementById('matchEndModal');
     const matchEndContent = document.getElementById('matchEndContent');
     const closeMatchEndBtn = document.getElementById('closeMatchEndBtn');
+    const closeMatchEndConfirmBtn = document.getElementById('closeMatchEndConfirmBtn');
     const generatePdfBtn = document.getElementById('generatePdfBtn');
     const teamAScoreInput = document.getElementById('teamAScoreInput');
     const teamBScoreInput = document.getElementById('teamBScoreInput');
@@ -168,7 +159,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let currentSubContext = {
         isTeamA: true,
-        subToEdit: null,
+        windowToEdit: null,
         additionalSubs: [] // For tracking multiple substitutions in one window
     };
 
@@ -289,7 +280,8 @@ document.addEventListener('DOMContentLoaded', function() {
             closeSubstitutionDialog();
         });
         
-        // Add event listener for "Add Another Sub" button - will be initialized when modal opens
+        // Add event listener for adding another substitution
+        addAnotherSubBtn.addEventListener('click', addAnotherSubstitution);
         
         // Injury Summary Modal
         closeInjurySummaryBtn.addEventListener('click', () => {
@@ -299,6 +291,17 @@ document.addEventListener('DOMContentLoaded', function() {
         closeInjurySummaryConfirmBtn.addEventListener('click', () => {
             injurySummaryModal.style.display = 'none';
         });
+        
+        // Match End Modal
+        closeMatchEndBtn.addEventListener('click', () => {
+            matchEndModal.style.display = 'none';
+        });
+        
+        closeMatchEndConfirmBtn.addEventListener('click', () => {
+            matchEndModal.style.display = 'none';
+        });
+        
+        generatePdfBtn.addEventListener('click', generateMatchSummaryPDF);
         
         // Reset Confirmation Modal
         closeResetConfirmBtn.addEventListener('click', () => {
@@ -310,13 +313,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         confirmResetBtn.addEventListener('click', resetAllData);
-        
-        // Match End Modal
-        closeMatchEndBtn.addEventListener('click', () => {
-            matchEndModal.style.display = 'none';
-        });
-        
-        generatePdfBtn.addEventListener('click', generateMatchSummaryPDF);
     }
 
     // Initialize color pickers
@@ -377,6 +373,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 ...matchState,
                 ...parsedData,
                 startTime: parsedData.startTime ? new Date(parsedData.startTime) : null,
+                endTime: parsedData.endTime ? new Date(parsedData.endTime) : null,
                 currentInjuryStartTime: parsedData.currentInjuryStartTime ? new Date(parsedData.currentInjuryStartTime) : null
             };
             
@@ -387,6 +384,15 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (matchState.teamB.subWindows === undefined) {
                 matchState.teamB.subWindows = calculateUsedSubWindows(matchState.teamB.substitutions);
+            }
+            
+            // Ensure scores property exists on both teams
+            if (matchState.teamA.score === undefined) {
+                matchState.teamA.score = 0;
+            }
+            
+            if (matchState.teamB.score === undefined) {
+                matchState.teamB.score = 0;
             }
             
             // Ensure activeSubWindow property exists
@@ -401,7 +407,7 @@ document.addEventListener('DOMContentLoaded', function() {
             updateUI();
             
             // Start timers if match is in progress
-            if (matchState.isMatchStarted) {
+            if (matchState.isMatchStarted && !matchState.isMatchEnded) {
                 startTimers();
             }
         }
@@ -430,6 +436,7 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('matchData', JSON.stringify({
             ...matchState,
             startTime: matchState.startTime ? matchState.startTime.toISOString() : null,
+            endTime: matchState.endTime ? matchState.endTime.toISOString() : null,
             currentInjuryStartTime: matchState.currentInjuryStartTime ? matchState.currentInjuryStartTime.toISOString() : null
         }));
     }
@@ -495,13 +502,12 @@ document.addEventListener('DOMContentLoaded', function() {
             matchControlsEl.style.display = 'none';
             injuryControlsEl.style.display = 'flex';
             injuryFab.style.display = 'flex';
-            endMatchBtn.style.display = 'block';
+            endMatchBtn.style.display = 'flex';
         } else if (matchState.isMatchEnded) {
             matchControlsEl.style.display = 'none';
             injuryControlsEl.style.display = 'none';
             injuryFab.style.display = 'none';
             endMatchBtn.style.display = 'none';
-            // Maybe show a summary button instead
         } else {
             matchControlsEl.style.display = 'flex';
             injuryControlsEl.style.display = 'none';
@@ -540,7 +546,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }
-
+            
     // Render team cards
     function renderTeamCards() {
         // Team A cards
@@ -670,6 +676,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Start match
     function startMatch() {
         matchState.isMatchStarted = true;
+        matchState.isMatchEnded = false;
         matchState.startTime = new Date();
         
         startTimers();
@@ -733,8 +740,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const now = new Date();
                 const injuryDuration = now - matchState.currentInjuryStartTime;
                 const injurySeconds = Math.floor(injuryDuration / 1000);
-                
-                // Add to total injury time
+                     // Add to total injury time
                 matchState.totalInjurySeconds += injurySeconds;
                 
                 // Record injury period
@@ -1018,21 +1024,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Clear existing fields
         playerInInput.value = '';
         playerOutInput.value = '';
-        
-        // Create container for additional substitutions
-        const additionalSubsContainer = document.getElementById('additionalSubsContainer');
-        if (!additionalSubsContainer) {
-            // If the first time showing this modal with our new UI, add the container
-            const modalContent = subModal.querySelector('.modal-content');
-            // Add the container for additional subs
-            modalContent.insertBefore(addAnotherSubSection, subModalActions);
-            
-            // Add event listener for the add button
-            document.getElementById('addAnotherSubBtn').addEventListener('click', addAnotherSubstitution);
-        } else {
-            // Clear any existing fields
-            additionalSubsContainer.innerHTML = '';
-        }
+        additionalSubsContainer.innerHTML = '';
         
         // If editing an existing window, prepopulate the fields with the substitutions
         if (windowToEdit) {
@@ -1049,7 +1041,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (subs.length > 1) {
                     for (let i = 1; i < subs.length; i++) {
                         const newSubFields = createSubstitutionFields(subs[i].playerInNumber, subs[i].playerOutNumber);
-                        document.getElementById('additionalSubsContainer').appendChild(newSubFields);
+                        additionalSubsContainer.appendChild(newSubFields);
                     }
                 }
             }
@@ -1115,7 +1107,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add another substitution field
     function addAnotherSubstitution() {
         const newSubFields = createSubstitutionFields();
-        document.getElementById('additionalSubsContainer').appendChild(newSubFields);
+        additionalSubsContainer.appendChild(newSubFields);
     }
 
     // Close substitution dialog and clean up
@@ -1173,24 +1165,21 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         // Add additional substitutions if any
-        const additionalSubsContainer = document.getElementById('additionalSubsContainer');
-        if (additionalSubsContainer) {
-            const additionalFields = additionalSubsContainer.querySelectorAll('.substitution-fields');
-            additionalFields.forEach((field, index) => {
-                const addPlayerIn = field.querySelector('.player-in').value.trim();
-                const addPlayerOut = field.querySelector('.player-out').value.trim();
-                
-                if (addPlayerIn && addPlayerOut) {
-                    substitutions.push({
-                        id: Date.now().toString() + `-${index + 2}`,
-                        playerInNumber: addPlayerIn,
-                        playerOutNumber: addPlayerOut,
-                        timeStamp: currentTimeStamp,
-                        windowId: windowId
-                    });
-                }
-            });
-        }
+        const additionalFields = additionalSubsContainer.querySelectorAll('.substitution-fields');
+        additionalFields.forEach((field, index) => {
+            const addPlayerIn = field.querySelector('.player-in').value.trim();
+            const addPlayerOut = field.querySelector('.player-out').value.trim();
+            
+            if (addPlayerIn && addPlayerOut) {
+                substitutions.push({
+                    id: Date.now().toString() + `-${index + 2}`,
+                    playerInNumber: addPlayerIn,
+                    playerOutNumber: addPlayerOut,
+                    timeStamp: currentTimeStamp,
+                    windowId: windowId
+                });
+            }
+        });
         
         // Handle the window tracking logic
         if (windowToEdit) {
@@ -1263,77 +1252,6 @@ document.addEventListener('DOMContentLoaded', function() {
         subModal.style.display = 'none';
     }
 
-    // Show reset confirmation dialog
-    function showResetConfirmDialog() {
-        resetConfirmModal.style.display = 'flex';
-    }
-
-    // Reset all data
-    function resetAllData() {
-        // Stop timers
-        clearInterval(matchTimer);
-        clearInterval(injuryTimer);
-        
-        // Reset match state
-        matchState = {
-            isMatchStarted: false,
-            startTime: null,
-            elapsedTime: "00:00",
-            teamA: {
-                name: "ทีม A",
-                color: "#1976D2",
-                cards: [],
-                substitutions: [],
-                subWindows: 0
-            },
-            teamB: {
-                name: "ทีม B",
-                color: "#D32F2F",
-                cards: [],
-                substitutions: [],
-                subWindows: 0
-            },
-            isInjuryTimeActive: false,
-            totalInjurySeconds: 0,
-            injuryTimePeriods: [],
-            currentInjuryStartTime: null,
-            currentInjuryTimeDisplay: "+00:00",
-            activeSubWindow: {
-                teamA: false,
-                teamB: false
-            }
-        };
-        
-        // Clear localStorage
-        clearMatchData();
-        
-        // Update UI
-        updateUI();
-        
-        // Hide reset modal
-        resetConfirmModal.style.display = 'none';
-        
-        // Show team settings modal
-        showTeamCustomizationDialog();
-    }
-
-    // Edit card function (called from event cards)
-    window.editCard = function(cardId, isTeamA) {
-        // Find card
-        const card = isTeamA 
-            ? matchState.teamA.cards.find(c => c.id === cardId)
-            : matchState.teamB.cards.find(c => c.id === cardId);
-        
-        if (card) {
-            showCardDialog(isTeamA, card.isYellow, card);
-        }
-    };
-
-    // Edit substitution window function (called from sub cards)
-    window.editSubstitutionWindow = function(windowId, isTeamA) {
-        showSubstitutionDialog(isTeamA, windowId);
-    };
-
     // End match function
     function endMatch() {
         if (!matchState.isMatchStarted) {
@@ -1381,186 +1299,21 @@ document.addEventListener('DOMContentLoaded', function() {
         matchEndModal.style.display = 'flex';
     }
     
-    // Generate PDF summary
-    function generateMatchSummaryPDF() {
-        // Get final scores
-        matchState.teamA.score = parseInt(teamAScoreInput.value) || 0;
-        matchState.teamB.score = parseInt(teamBScoreInput.value) || 0;
-        
-        // Save before generating PDF
-        saveMatchData();
-        
-        // Create PDF using jsPDF (need to include in HTML)
-        if (typeof jspdf === 'undefined') {
-            alert('กรุณารอสักครู่ กำลังโหลด PDF generator...');
-            
-            // Add jsPDF script dynamically
-            const script = document.createElement('script');
-            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-            script.onload = function() {
-                // Add html2canvas script dynamically
-                const canvasScript = document.createElement('script');
-                canvasScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-                canvasScript.onload = actuallyGeneratePDF;
-                document.head.appendChild(canvasScript);
-            };
-            document.head.appendChild(script);
-        } else {
-            actuallyGeneratePDF();
-        }
-    }
-    
-    function actuallyGeneratePDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        
-        // Set font for Thai language support
-        doc.setFont('helvetica', 'normal');
-        
-        // Add PDF title
-        doc.setFontSize(20);
-        doc.text('รายงานสรุปการแข่งขัน', 105, 20, { align: 'center' });
-        
-        // Add match date
-        const matchDate = matchState.startTime ? new Date(matchState.startTime).toLocaleDateString('th-TH') : 'ไม่ระบุ';
-        doc.setFontSize(12);
-        doc.text(`วันที่: ${matchDate}`, 20, 30);
-        
-        // Add team names and scores
-        doc.setFontSize(16);
-        const scoreText = `${matchState.teamA.name} ${matchState.teamA.score} - ${matchState.teamB.score} ${matchState.teamB.name}`;
-        doc.text(scoreText, 105, 40, { align: 'center' });
-        
-        // Add match duration
-        doc.setFontSize(12);
-        doc.text(`ระยะเวลาการแข่งขัน: ${matchState.finalMatchTime}`, 20, 50);
-        doc.text(`เวลาทดเจ็บรวม: ${getTotalInjuryTimeDisplay()}`, 20, 60);
-        
-        // Section: Yellow/Red cards
-        let yPos = 70;
-        doc.setFontSize(14);
-        doc.text('ใบเตือนและใบเหลือง', 20, yPos);
-        yPos += 10;
-        
-        // Team A cards
-        if (matchState.teamA.cards.length > 0) {
-            doc.setFontSize(12);
-            doc.text(`${matchState.teamA.name}:`, 20, yPos);
-            yPos += 6;
-            
-            matchState.teamA.cards.forEach(card => {
-                doc.setFontSize(10);
-                doc.text(`• ${card.isYellow ? 'ใบเหลือง' : 'ใบแดง'} - ผู้เล่นหมายเลข ${card.playerNumber} (เวลา: ${card.timeStamp})`, 30, yPos);
-                yPos += 6;
-            });
-        }
-        
-        // Team B cards
-        if (matchState.teamB.cards.length > 0) {
-            doc.setFontSize(12);
-            doc.text(`${matchState.teamB.name}:`, 20, yPos);
-            yPos += 6;
-            
-            matchState.teamB.cards.forEach(card => {
-                doc.setFontSize(10);
-                doc.text(`• ${card.isYellow ? 'ใบเหลือง' : 'ใบแดง'} - ผู้เล่นหมายเลข ${card.playerNumber} (เวลา: ${card.timeStamp})`, 30, yPos);
-                yPos += 6;
-            });
-        }
-        
-        // Add some spacing
-        yPos += 5;
-        
-        // Check if we need a new page
-        if (yPos > 250) {
-            doc.addPage();
-            yPos = 20;
-        }
-        
-        // Section: Substitutions
-        doc.setFontSize(14);
-        doc.text('การเปลี่ยนตัว', 20, yPos);
-        yPos += 10;
-        
-        // Helper function to group subs by window
-        function addTeamSubstitutions(team, teamName) {
-            // Group substitutions by window
-            const windows = {};
-            team.substitutions.forEach(sub => {
-                const windowId = sub.windowId || sub.id;
-                if (!windows[windowId]) {
-                    windows[windowId] = {
-                        id: windowId,
-                        subs: [],
-                        timeStamp: sub.timeStamp
-                    };
-                }
-                windows[windowId].subs.push(sub);
-            });
-            
-            // Convert to array and sort
-            const sortedWindows = Object.values(windows).sort((a, b) => a.timeStamp.localeCompare(b.timeStamp));
-            
-            if (sortedWindows.length > 0) {
-                doc.setFontSize(12);
-                doc.text(`${teamName}:`, 20, yPos);
-                yPos += 6;
-                
-                sortedWindows.forEach((window, index) => {
-                    doc.setFontSize(10);
-                    doc.text(`• ช่วงเปลี่ยนตัวที่ ${index + 1} (เวลา: ${window.timeStamp}):`, 30, yPos);
-                    yPos += 5;
-                    
-                    window.subs.forEach(sub => {
-                        doc.text(`  - ผู้เล่นหมายเลข ${sub.playerInNumber} เข้า, ผู้เล่นหมายเลข ${sub.playerOutNumber} ออก`, 40, yPos);
-                        yPos += 5;
-                    });
-                    
-                    yPos += 2;
-                });
-            }
-            
-            return yPos > 250;
-        }
-        
-        // Team A subs
-        if (matchState.teamA.substitutions.length > 0) {
-            if (addTeamSubstitutions(matchState.teamA, matchState.teamA.name)) {
-                doc.addPage();
-                yPos = 20;
-            }
-        }
-        
-        // Team B subs
-        if (matchState.teamB.substitutions.length > 0) {
-            if (addTeamSubstitutions(matchState.teamB, matchState.teamB.name)) {
-                doc.addPage();
-                yPos = 20;
-            }
-        }
-        
-        // Add signature lines
-        yPos += 20;
-        doc.line(20, yPos, 80, yPos);
-        doc.line(120, yPos, 180, yPos);
-        yPos += 5;
-        doc.text('ผู้ตัดสิน', 50, yPos, { align: 'center' });
-        doc.text('ผู้จดบันทึก', 150, yPos, { align: 'center' });
-        
-        // Save PDF
-        const matchDateFormatted = matchState.startTime ? new Date(matchState.startTime).toLocaleDateString('th-TH').replace(/\//g, '-') : 'unknown-date';
-        const filename = `football-match-${matchState.teamA.name}-vs-${matchState.teamB.name}-${matchDateFormatted}.pdf`;
-        
-        doc.save(filename);
-        
-        // Display success message
-        alert(`บันทึก PDF สำเร็จ: ${filename}`);
-        
-        // Close modal
-        matchEndModal.style.display = 'none';
+    // Show reset confirmation dialog
+    function showResetConfirmDialog() {
+        resetConfirmModal.style.display = 'flex';
     }
 
-    // Initialize the app
-    init();
 
-});
+        // Clear localStorage
+        clearMatchData();
+        
+        // Update UI
+        updateUI();
+        
+        // Hide reset modal
+        resetConfirmModal.style.display = 'none';
+        
+        // Show team settings modal
+        showTeamCustomizationDialog();
+    }
