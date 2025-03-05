@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Football Match Tracker</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
             --team-a-color: #1976D2;
@@ -114,6 +115,7 @@
             padding: 10px;
             background-color: white;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            gap: 10px; /* เพิ่มระยะห่างระหว่างปุ่ม */
         }
 
         .control-btn {
@@ -329,7 +331,6 @@
             background-color: var(--border-color);
         }
 
-        /* Modal styles */
         .modal {
             display: none;
             position: fixed;
@@ -462,14 +463,12 @@
             background-color: #D32F2F;
         }
 
-        /* No data state */
         .no-data {
             padding: 20px;
             text-align: center;
             color: var(--text-secondary);
         }
         
-        /* Empty state */
         .empty-state {
             display: flex;
             flex-direction: column;
@@ -515,6 +514,9 @@
             <button class="control-btn injury-btn" id="injuryBtn">
                 <i class="fas fa-stopwatch"></i> ทดเวลา
             </button>
+            <button class="control-btn end-btn" id="endMatchBtn" style="background-color: #ff4444; color: white;">
+                <i class="fas fa-flag-checkered"></i> จบการแข่งขัน
+            </button>
         </div>
         
         <div class="teams-container">
@@ -537,14 +539,12 @@
                                 <i class="fas fa-square empty-icon"></i>
                                 <p>ยังไม่มีข้อมูล</p>
                             </div>
-                            <!-- Card events will be added here -->
                         </div>
                         <div class="tab-content" id="teamASubsContent">
                             <div class="empty-state" id="teamASubsEmpty">
                                 <i class="fas fa-exchange-alt empty-icon"></i>
                                 <p>ยังไม่มีข้อมูล</p>
                             </div>
-                            <!-- Substitution events will be added here -->
                         </div>
                     </div>
                 </div>
@@ -572,14 +572,12 @@
                                 <i class="fas fa-square empty-icon"></i>
                                 <p>ยังไม่มีข้อมูล</p>
                             </div>
-                            <!-- Card events will be added here -->
                         </div>
                         <div class="tab-content" id="teamBSubsContent">
                             <div class="empty-state" id="teamBSubsEmpty">
                                 <i class="fas fa-exchange-alt empty-icon"></i>
                                 <p>ยังไม่มีข้อมูล</p>
                             </div>
-                            <!-- Substitution events will be added here -->
                         </div>
                     </div>
                 </div>
