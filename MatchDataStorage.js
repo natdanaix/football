@@ -8,7 +8,7 @@
 
 class MatchDataStorage {
     /**
-     * Initialize the match data storage with default values
+     * Initialize the match data storage with default valuess
      */
     constructor() {
         this.matchState = {
