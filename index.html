@@ -1,505 +1,13 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Football Match Tracker</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <style>
-        :root {
-            --team-a-color: #1976D2;
-            --team-a-dark: #0D47A1;
-            --team-a-light: #E3F2FD;
-            --team-b-color: #D32F2F;
-            --team-b-dark: #B71C1C;
-            --team-b-light: #FFEBEE;
-            --neutral-bg: #F5F5F5;
-            --yellow-card: #FFC107;
-            --red-card: #D32F2F;
-            --text-primary: #212121;
-            --text-secondary: #757575;
-            --text-light: #FFFFFF;
-            --border-color: #E0E0E0;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background-color: var(--neutral-bg);
-            color: var(--text-primary);
-            font-size: 16px;
-            line-height: 1.5;
-            max-width: 100%;
-            overflow-x: hidden;
-        }
-
-        .container {
-            max-width: 100%;
-            margin: 0 auto;
-        }
-
-        header {
-            background-color: #2196F3;
-            color: white;
-            padding: 10px;
-            text-align: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 1.2rem;
-            font-weight: bold;
-        }
-
-        .settings-btn {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.2rem;
-            cursor: pointer;
-        }
-
-        .timer-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: 10px;
-            gap: 10px;
-        }
-
-        .match-time {
-            background-color: #0D47A1;
-            color: white;
-            font-size: 1.5rem;
-            font-weight: bold;
-            padding: 8px 16px;
-            border-radius: 12px;
-        }
-
-        .injury-time {
-            background-color: #D32F2F;
-            color: white;
-            font-size: 1.2rem;
-            font-weight: bold;
-            padding: 6px 12px;
-            border-radius: 12px;
-        }
-
-        .total-injury {
-            background-color: #FF9800;
-            color: white;
-            font-size: 1.2rem;
-            font-weight: bold;
-            padding: 6px 12px;
-            border-radius: 12px;
-        }
-
-        .match-controls {
-            display: flex;
-            justify-content: center;
-            padding: 10px;
-            background-color: white;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            gap: 10px;
-        }
-
-        .control-btn {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            width: 100%;
-            justify-content: center;
-        }
-
-        .start-btn {
-            background-color: #4CAF50;
-            color: white;
-        }
-
-        .injury-btn {
-            background-color: #4CAF50;
-            color: white;
-        }
-
-        .injury-btn.active {
-            background-color: #D32F2F;
-        }
-
-        .teams-container {
-            display: flex;
-            height: calc(100vh - 180px);
-        }
-
-        .team-panel {
-            flex: 1;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .team-a {
-            background-color: var(--team-a-light);
-        }
-
-        .team-b {
-            background-color: var(--team-b-light);
-        }
-
-        .team-header {
-            padding: 10px;
-            text-align: center;
-            margin-bottom: 10px;
-            border-radius: 6px;
-            font-weight: bold;
-            color: white;
-        }
-
-        .team-a .team-header {
-            background-color: var(--team-a-color);
-        }
-
-        .team-b .team-header {
-            background-color: var(--team-b-color);
-        }
-
-        .team-actions {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            gap: 5px;
-        }
-
-        .action-btn {
-            flex: 1;
-            padding: 8px 0;
-            border: none;
-            border-radius: 4px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 0.8rem;
-        }
-
-        .yellow-btn {
-            background-color: var(--yellow-card);
-            color: var(--text-primary);
-        }
-
-        .red-btn {
-            background-color: var(--red-card);
-            color: white;
-        }
-
-        .sub-btn-a {
-            background-color: var(--team-a-color);
-            color: white;
-        }
-
-        .sub-btn-b {
-            background-color: var(--team-b-color);
-            color: white;
-        }
-
-        .team-content {
-            flex: 1;
-            overflow-y: auto;
-        }
-
-        .tab-container {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-
-        .tabs {
-            display: flex;
-            border-bottom: 1px solid var(--border-color);
-            margin-bottom: 10px;
-        }
-
-        .tab {
-            padding: 8px 12px;
-            cursor: pointer;
-            font-weight: bold;
-            color: var(--text-secondary);
-            border-bottom: 3px solid transparent;
-        }
-
-        .tab.active {
-            color: var(--text-primary);
-            border-bottom-color: var(--team-a-color);
-        }
-
-        .team-b .tab.active {
-            border-bottom-color: var(--team-b-color);
-        }
-
-        .tab-content {
-            display: none;
-            flex: 1;
-            overflow-y: auto;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .event-card {
-            background-color: white;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            padding: 10px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            position: relative;
-            display: flex;
-        }
-
-        .event-icon {
-            margin-right: 10px;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 30px;
-            height: 30px;
-        }
-
-        .yellow-icon {
-            color: var(--yellow-card);
-        }
-
-        .red-icon {
-            color: var(--red-card);
-        }
-
-        .sub-icon-a {
-            color: var(--team-a-color);
-        }
-
-        .sub-icon-b {
-            color: var(--team-b-color);
-        }
-
-        .event-details {
-            flex: 1;
-        }
-
-        .event-title {
-            font-weight: bold;
-            margin-bottom: 3px;
-        }
-
-        .event-time {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-        }
-
-        .edit-btn {
-            position: absolute;
-            right: 10px;
-            top: 10px;
-            background: none;
-            border: none;
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            cursor: pointer;
-        }
-
-        .divider {
-            width: 2px;
-            background-color: var(--border-color);
-        }
-
-        /* Modal styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.7);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background-color: white;
-            width: 90%;
-            max-width: 350px;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .modal-title {
-            font-size: 1.2rem;
-            font-weight: bold;
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--text-secondary);
-        }
-
-        .input-group {
-            margin-bottom: 15px;
-        }
-
-        .input-label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        .input-field {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            font-size: 1rem;
-        }
-
-        .color-picker {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 8px;
-        }
-
-        .color-option {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid transparent;
-        }
-
-        .color-option.selected {
-            border-color: black;
-        }
-
-        .modal-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .modal-btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 4px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .cancel-btn {
-            background-color: var(--neutral-bg);
-            color: var(--text-primary);
-        }
-
-        .confirm-btn {
-            background-color: #2196F3;
-            color: white;
-        }
-
-        .delete-btn {
-            background-color: #D32F2F;
-            color: white;
-        }
-
-        .fab {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background-color: #4CAF50;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            box-shadow: 0 3px 5px rgba(0,0,0,0.3);
-            border: none;
-            cursor: pointer;
-            z-index: 90;
-        }
-
-        .fab.injury-active {
-            background-color: #D32F2F;
-        }
-
-        /* No data state */
-        .no-data {
-            padding: 20px;
-            text-align: center;
-            color: var(--text-secondary);
-        }
-        
-        /* Empty state */
-        .empty-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: var(--text-secondary);
-            padding: 20px;
-            text-align: center;
-        }
-        
-        .empty-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
-            opacity: 0.5;
-        }
-
-        /* Scrollable summary container */
-        .summary-container {
-            max-height: 60vh;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
-    
 <body>
     <div class="container">
         <header>
@@ -518,47 +26,45 @@
         
         <div class="match-controls" id="matchControls">
             <button class="control-btn start-btn" id="startMatchBtn">
-                <i class="fas fa-play"></i> เริ่มการแข่งขัน
+                <i class="fas fa-play"></i> Start Match
             </button>
         </div>
         
         <div class="match-controls" id="injuryControls" style="display: none;">
             <button class="control-btn injury-btn" id="injuryBtn">
-                <i class="fas fa-stopwatch"></i> ทดเวลา
+                <i class="fas fa-stopwatch"></i> Injury Time
             </button>
             <button class="control-btn end-btn" id="endMatchBtn" style="background-color: #757575; color: white;">
-                <i class="fas fa-stop"></i> จบการแข่งขัน
+                <i class="fas fa-stop"></i> End Match
             </button>
         </div>
         
         <div class="teams-container">
             <!-- Team A Panel -->
             <div class="team-panel team-a">
-                <div class="team-header" id="teamAHeader">ทีม A</div>
+                <div class="team-header" id="teamAHeader">Team A</div>
                 <div class="team-actions">
-                    <button class="action-btn yellow-btn" id="teamAYellowBtn">ใบเหลือง</button>
-                    <button class="action-btn red-btn" id="teamARedBtn">ใบแดง</button>
-                    <button class="action-btn sub-btn-a" id="teamASubBtn">เปลี่ยนตัว</button>
+                    <button class="action-btn yellow-btn" id="teamAYellowBtn">Yellow Card</button>
+                    <button class="action-btn red-btn" id="teamARedBtn">Red Card</button>
+                    <button class="action-btn sub-btn-a" id="teamASubBtn">Substitution</button>
                 </div>
                 <div class="team-content">
                     <div class="tab-container">
                         <div class="tabs">
-                            <div class="tab active" data-team="a" data-tab="cards">ใบเตือน</div>
-                            <div class="tab" data-team="a" data-tab="subs">เปลี่ยนตัว</div>
+                            <div class="tab active" data-team="a" data-tab="cards">Cards</div>
+                            <div class="tab" data-team="a" data-tab="subs">Substitutions</div>
                         </div>
                         <div class="tab-content active" id="teamACardsContent">
                             <div class="empty-state" id="teamACardsEmpty">
                                 <i class="fas fa-square empty-icon"></i>
-                                <p>ยังไม่มีข้อมูล</p>
+                                <p>No Data Yet</p>
                             </div>
-                            <!-- Card events will be added here -->
                         </div>
                         <div class="tab-content" id="teamASubsContent">
                             <div class="empty-state" id="teamASubsEmpty">
                                 <i class="fas fa-exchange-alt empty-icon"></i>
-                                <p>ยังไม่มีข้อมูล</p>
+                                <p>No Data Yet</p>
                             </div>
-                            <!-- Substitution events will be added here -->
                         </div>
                     </div>
                 </div>
@@ -569,31 +75,29 @@
             
             <!-- Team B Panel -->
             <div class="team-panel team-b">
-                <div class="team-header" id="teamBHeader">ทีม B</div>
+                <div class="team-header" id="teamBHeader">Team B</div>
                 <div class="team-actions">
-                    <button class="action-btn yellow-btn" id="teamBYellowBtn">ใบเหลือง</button>
-                    <button class="action-btn red-btn" id="teamBRedBtn">ใบแดง</button>
-                    <button class="action-btn sub-btn-b" id="teamBSubBtn">เปลี่ยนตัว</button>
+                    <button class="action-btn yellow-btn" id="teamBYellowBtn">Yellow Card</button>
+                    <button class="action-btn red-btn" id="teamBRedBtn">Red Card</button>
+                    <button class="action-btn sub-btn-b" id="teamBSubBtn">Substitution</button>
                 </div>
                 <div class="team-content">
                     <div class="tab-container">
                         <div class="tabs">
-                            <div class="tab active" data-team="b" data-tab="cards">ใบเตือน</div>
-                            <div class="tab" data-team="b" data-tab="subs">เปลี่ยนตัว</div>
+                            <div class="tab active" data-team="b" data-tab="cards">Cards</div>
+                            <div class="tab" data-team="b" data-tab="subs">Substitutions</div>
                         </div>
                         <div class="tab-content active" id="teamBCardsContent">
                             <div class="empty-state" id="teamBCardsEmpty">
                                 <i class="fas fa-square empty-icon"></i>
-                                <p>ยังไม่มีข้อมูล</p>
+                                <p>No Data Yet</p>
                             </div>
-                            <!-- Card events will be added here -->
                         </div>
                         <div class="tab-content" id="teamBSubsContent">
                             <div class="empty-state" id="teamBSubsEmpty">
                                 <i class="fas fa-exchange-alt empty-icon"></i>
-                                <p>ยังไม่มีข้อมูล</p>
+                                <p>No Data Yet</p>
                             </div>
-                            <!-- Substitution events will be added here -->
                         </div>
                     </div>
                 </div>
@@ -610,28 +114,24 @@
     <div class="modal" id="teamSettingsModal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">ตั้งค่าทีม</div>
+                <div class="modal-title">Team Settings</div>
                 <button class="close-btn" id="closeTeamSettingsBtn">×</button>
             </div>
             <div class="input-group">
-                <div class="input-label">ทีมที่ 1</div>
-                <input type="text" class="input-field" id="teamANameInput" placeholder="ชื่อทีม">
-                <div class="input-label" style="margin-top: 10px;">เลือกสีทีม</div>
-                <div class="color-picker" id="teamAColorPicker">
-                    <!-- Color options will be added here -->
-                </div>
+                <div class="input-label">Team 1</div>
+                <input type="text" class="input-field" id="teamANameInput" placeholder="Team Name">
+                <div class="input-label" style="margin-top: 10px;">Select Team Color</div>
+                <div class="color-picker" id="teamAColorPicker"></div>
             </div>
             <div class="input-group">
-                <div class="input-label">ทีมที่ 2</div>
-                <input type="text" class="input-field" id="teamBNameInput" placeholder="ชื่อทีม">
-                <div class="input-label" style="margin-top: 10px;">เลือกสีทีม</div>
-                <div class="color-picker" id="teamBColorPicker">
-                    <!-- Color options will be added here -->
-                </div>
+                <div class="input-label">Team 2</div>
+                <input type="text" class="input-field" id="teamBNameInput" placeholder="Team Name">
+                <div class="input-label" style="margin-top: 10px;">Select Team Color</div>
+                <div class="color-picker" id="teamBColorPicker"></div>
             </div>
             <div class="modal-actions">
-                <button class="modal-btn cancel-btn" id="cancelTeamSettingsBtn">ยกเลิก</button>
-                <button class="modal-btn confirm-btn" id="saveTeamSettingsBtn">ตกลง</button>
+                <button class="modal-btn cancel-btn" id="cancelTeamSettingsBtn">Cancel</button>
+                <button class="modal-btn confirm-btn" id="saveTeamSettingsBtn">Confirm</button>
             </div>
         </div>
     </div>
@@ -640,16 +140,16 @@
     <div class="modal" id="cardModal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title" id="cardModalTitle">ใบเหลือง - ทีม A</div>
+                <div class="modal-title" id="cardModalTitle">Yellow Card - Team A</div>
                 <button class="close-btn" id="closeCardModalBtn">×</button>
             </div>
             <div class="input-group">
-                <div class="input-label">หมายเลขผู้เล่น</div>
-                <input type="number" class="input-field" id="playerNumberInput" placeholder="เลขผู้เล่น">
+                <div class="input-label">Player Number</div>
+                <input type="number" class="input-field" id="playerNumberInput" placeholder="Player Number">
             </div>
             <div class="modal-actions" id="cardModalActions">
-                <button class="modal-btn cancel-btn" id="cancelCardBtn">ยกเลิก</button>
-                <button class="modal-btn confirm-btn" id="saveCardBtn">ยืนยัน</button>
+                <button class="modal-btn cancel-btn" id="cancelCardBtn">Cancel</button>
+                <button class="modal-btn confirm-btn" id="saveCardBtn">Confirm</button>
             </div>
         </div>
     </div>
@@ -658,20 +158,20 @@
     <div class="modal" id="subModal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title" id="subModalTitle">เปลี่ยนตัว - ทีม A</div>
+                <div class="modal-title" id="subModalTitle">Substitution - Team A</div>
                 <button class="close-btn" id="closeSubModalBtn">×</button>
             </div>
             <div class="input-group">
-                <div class="input-label">หมายเลขผู้เล่นที่เข้า</div>
-                <input type="number" class="input-field" id="playerInInput" placeholder="เลขผู้เล่นที่เข้า">
+                <div class="input-label">Player In Number</div>
+                <input type="number" class="input-field" id="playerInInput" placeholder="Player In Number">
             </div>
             <div class="input-group">
-                <div class="input-label">หมายเลขผู้เล่นที่ออก</div>
-                <input type="number" class="input-field" id="playerOutInput" placeholder="เลขผู้เล่นที่ออก">
+                <div class="input-label">Player Out Number</div>
+                <input type="number" class="input-field" id="playerOutInput" placeholder="Player Out Number">
             </div>
             <div class="modal-actions" id="subModalActions">
-                <button class="modal-btn cancel-btn" id="cancelSubBtn">ยกเลิก</button>
-                <button class="modal-btn confirm-btn" id="saveSubBtn">ยืนยัน</button>
+                <button class="modal-btn cancel-btn" id="cancelSubBtn">Cancel</button>
+                <button class="modal-btn confirm-btn" id="saveSubBtn">Confirm</button>
             </div>
         </div>
     </div>
@@ -680,14 +180,12 @@
     <div class="modal" id="injurySummaryModal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">สรุปเวลาทดเจ็บ</div>
+                <div class="modal-title">Injury Time Summary</div>
                 <button class="close-btn" id="closeInjurySummaryBtn">×</button>
             </div>
-            <div id="injurySummaryContent">
-                <!-- Injury time summary will be added here -->
-            </div>
+            <div id="injurySummaryContent"></div>
             <div class="modal-actions">
-                <button class="modal-btn confirm-btn" id="closeInjurySummaryConfirmBtn">ตกลง</button>
+                <button class="modal-btn confirm-btn" id="closeInjurySummaryConfirmBtn">OK</button>
             </div>
         </div>
     </div>
@@ -696,13 +194,13 @@
     <div class="modal" id="resetConfirmModal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">รีเซ็ตข้อมูล</div>
+                <div class="modal-title">Reset Data</div>
                 <button class="close-btn" id="closeResetConfirmBtn">×</button>
             </div>
-            <p>คุณต้องการรีเซ็ตข้อมูลทั้งหมดหรือไม่?</p>
+            <p>Do you want to reset all data?</p>
             <div class="modal-actions">
-                <button class="modal-btn cancel-btn" id="cancelResetBtn">ยกเลิก</button>
-                <button class="modal-btn delete-btn" id="confirmResetBtn">รีเซ็ต</button>
+                <button class="modal-btn cancel-btn" id="cancelResetBtn">Cancel</button>
+                <button class="modal-btn delete-btn" id="confirmResetBtn">Reset</button>
             </div>
         </div>
     </div>
@@ -711,20 +209,17 @@
     <div class="modal" id="matchSummaryModal">
         <div class="modal-content" style="max-width: 500px;">
             <div class="modal-header">
-                <div class="modal-title">สรุปผลการแข่งขัน</div>
+                <div class="modal-title">Match Summary</div>
                 <button class="close-btn" id="closeMatchSummaryBtn">×</button>
             </div>
-            <div class="summary-container" id="matchSummaryContent">
-                <!-- Match summary will be added here -->
-            </div>
+            <div class="summary-container" id="matchSummaryContent"></div>
             <div class="modal-actions">
-                <button class="modal-btn confirm-btn" id="saveAsPdfBtn">บันทึกเป็น PDF</button>
-                <button class="modal-btn confirm-btn" id="closeMatchSummaryConfirmBtn">ตกลง</button>
+                <button class="modal-btn confirm-btn" id="saveAsPdfBtn">Save as PDF</button>
+                <button class="modal-btn confirm-btn" id="closeMatchSummaryConfirmBtn">OK</button>
             </div>
         </div>
     </div>
 
     <script src="football-tracker.js"></script>
-    <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'91be451bb82e1361',t:'MTc0MTIyNjUzNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
 </html>
