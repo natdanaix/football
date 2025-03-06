@@ -827,6 +827,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert(`${team.name} ได้ใช้ช่วงเปลี่ยนตัวครบ 3 ครั้งแล้ว`);
                 return;
             }
+            matchState.activeSubWindow[isTeamA ? 'teamA' : 'teamB'] = true;
         }
         
         currentSubContext = { isTeamA, windowToEdit, additionalSubs: [] };
