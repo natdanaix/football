@@ -1,7 +1,7 @@
-// Import the MatchDataStorage class
-import MatchDataStorage from './MatchDataStorage.js';
+// เวอร์ชันที่ได้รับการแก้ไขของ football-tracker.js
+// สร้างตัวแปร global เพื่อเข้าถึงได้จากไฟล์อื่น
 
-document.addEventListener('DOMContentLoaded', function() {
+window.init = function() {
     // Initialize data storage
     const dataStorage = new MatchDataStorage();
     
@@ -124,23 +124,21 @@ document.addEventListener('DOMContentLoaded', function() {
         additionalSubs: []
     };
 
-    function init() {
-        // Load data using the storage class
-        dataStorage.loadSavedMatchData();
-        matchState = dataStorage.matchState;
-        
-        setupEventListeners();
-        initColorPickers();
-        
-        if (!matchState.isMatchStarted) {
-            setTimeout(showTeamCustomizationDialog, 500);
-        }
-        
-        updateUI();
-        
-        if (matchState.isMatchStarted) {
-            startTimers();
-        }
+    // Load data using the storage class
+    dataStorage.loadSavedMatchData();
+    matchState = dataStorage.matchState;
+    
+    setupEventListeners();
+    initColorPickers();
+    
+    if (!matchState.isMatchStarted) {
+        setTimeout(showTeamCustomizationDialog, 500);
+    }
+    
+    updateUI();
+    
+    if (matchState.isMatchStarted) {
+        startTimers();
     }
 
     function setupEventListeners() {
@@ -275,3 +273,382 @@ document.addEventListener('DOMContentLoaded', function() {
 
         renderTeamCards();
         renderTeamSubstitutions();
+    }
+
+    function showTeamCustomizationDialog() {
+        teamANameInput.value = matchState.teamA.name;
+        teamBNameInput.value = matchState.teamB.name;
+        teamSettingsModal.style.display = 'flex';
+    }
+
+    function startMatch() {
+        dataStorage.startMatch();
+        matchState = dataStorage.matchState;
+        startTimers();
+        updateUI();
+    }
+
+    function startTimers() {
+        if (matchTimer) clearInterval(matchTimer);
+        if (injuryTimer) clearInterval(injuryTimer);
+        
+        matchTimer = setInterval(() => {
+            dataStorage.updateMatchTime();
+            matchTimeEl.textContent = matchState.elapsedTime;
+        }, 1000);
+        
+        injuryTimer = setInterval(() => {
+            if (matchState.isInjuryTimeActive) {
+                dataStorage.updateInjuryTime();
+                injuryTimeEl.textContent = matchState.currentInjuryTimeDisplay;
+            }
+        }, 1000);
+    }
+
+    function toggleInjuryTime() {
+        const result = dataStorage.toggleInjuryTime();
+        if (result.success) {
+            updateUI();
+        }
+    }
+
+    function endMatch() {
+        stopTimers();
+        dataStorage.endMatch();
+        matchState = dataStorage.matchState;
+        updateUI();
+        showInjurySummary();
+    }
+
+    function stopTimers() {
+        if (matchTimer) clearInterval(matchTimer);
+        if (injuryTimer) clearInterval(injuryTimer);
+        matchTimer = null;
+        injuryTimer = null;
+    }
+
+    function showInjurySummary() {
+        const exportData = dataStorage.getExportData();
+        injurySummaryContent.innerHTML = `
+            <div style="margin-bottom: 15px;">
+                <p><strong>เวลาการแข่งขัน:</strong> ${exportData.matchTime}</p>
+                <p><strong>รวมเวลาทดเจ็บ:</strong> ${exportData.totalInjuryTime}</p>
+            </div>
+            ${exportData.injuryTimePeriods.length > 0 ? `
+                <div style="margin-bottom: 15px;">
+                    <p><strong>รายละเอียดเวลาทดเจ็บ:</strong></p>
+                    <ul style="padding-left: 20px;">
+                        ${exportData.injuryTimePeriods.map((period, index) => 
+                            `<li>ช่วงที่ ${index + 1}: ${period}</li>`
+                        ).join('')}
+                    </ul>
+                </div>
+            ` : ''}
+        `;
+        injurySummaryModal.style.display = 'flex';
+    }
+
+    function saveTeamSettings() {
+        const teamAName = teamANameInput.value;
+        const teamBName = teamBNameInput.value;
+        
+        const teamAColorOption = document.querySelector('#teamAColorPicker .color-option.selected');
+        const teamBColorOption = document.querySelector('#teamBColorPicker .color-option.selected');
+        
+        const teamAColor = teamAColorOption ? teamAColorOption.style.backgroundColor : matchState.teamA.color;
+        const teamBColor = teamBColorOption ? teamBColorOption.style.backgroundColor : matchState.teamB.color;
+        
+        dataStorage.updateTeamSettings(teamAName, teamAColor, teamBName, teamBColor);
+        matchState = dataStorage.matchState;
+        updateUI();
+        
+        teamSettingsModal.style.display = 'none';
+    }
+
+    function showCardDialog(isTeamA, isYellow, cardToEdit = null) {
+        currentCardContext = {
+            isTeamA,
+            isYellow,
+            cardToEdit
+        };
+        
+        const teamName = isTeamA ? matchState.teamA.name : matchState.teamB.name;
+        const cardType = isYellow ? 'ใบเหลือง' : 'ใบแดง';
+        cardModalTitle.textContent = `${cardType} - ${teamName}`;
+        
+        if (cardToEdit) {
+            const team = isTeamA ? matchState.teamA : matchState.teamB;
+            const card = team.cards.find(c => c.id === cardToEdit);
+            if (card) {
+                playerNumberInput.value = card.playerNumber;
+            }
+        } else {
+            playerNumberInput.value = '';
+        }
+        
+        cardModal.style.display = 'flex';
+    }
+
+    function saveCardEvent() {
+        const playerNumber = playerNumberInput.value.trim();
+        if (!playerNumber) {
+            alert('กรุณาระบุหมายเลขผู้เล่น');
+            return;
+        }
+        
+        const { isTeamA, isYellow, cardToEdit } = currentCardContext;
+        dataStorage.saveCard(isTeamA, isYellow, playerNumber, cardToEdit);
+        updateUI();
+        
+        cardModal.style.display = 'none';
+    }
+
+    function showSubstitutionDialog(isTeamA, windowId = null) {
+        if (!isTeamA && !windowId && dataStorage.hasReachedMaxSubWindows(false)) {
+            alert(`${matchState.teamB.name} ได้ใช้โอกาสเปลี่ยนตัวครบ 3 ครั้งแล้ว`);
+            return;
+        }
+        
+        if (isTeamA && !windowId && dataStorage.hasReachedMaxSubWindows(true)) {
+            alert(`${matchState.teamA.name} ได้ใช้โอกาสเปลี่ยนตัวครบ 3 ครั้งแล้ว`);
+            return;
+        }
+        
+        currentSubContext = {
+            isTeamA,
+            subToEdit: windowId,
+            additionalSubs: []
+        };
+        
+        const teamName = isTeamA ? matchState.teamA.name : matchState.teamB.name;
+        subModalTitle.textContent = `เปลี่ยนตัว - ${teamName}`;
+        
+        // Clear previous fields
+        playerInInput.value = '';
+        playerOutInput.value = '';
+        
+        // If editing, populate with existing values
+        if (windowId) {
+            const team = isTeamA ? 'teamA' : 'teamB';
+            const subs = matchState[team].substitutions.filter(
+                sub => sub.windowId === windowId || sub.id === windowId
+            );
+            
+            if (subs.length > 0) {
+                playerInInput.value = subs[0].playerInNumber;
+                playerOutInput.value = subs[0].playerOutNumber;
+                
+                // Add additional subs if any
+                if (subs.length > 1) {
+                    for (let i = 1; i < subs.length; i++) {
+                        currentSubContext.additionalSubs.push({
+                            playerIn: subs[i].playerInNumber,
+                            playerOut: subs[i].playerOutNumber
+                        });
+                    }
+                }
+            }
+        }
+        
+        subModal.style.display = 'flex';
+    }
+
+    function closeSubstitutionDialog() {
+        subModal.style.display = 'none';
+        currentSubContext.additionalSubs = [];
+    }
+
+    function saveSubstitutionEvent() {
+        const playerIn = playerInInput.value.trim();
+        const playerOut = playerOutInput.value.trim();
+        
+        if (!playerIn || !playerOut) {
+            alert('กรุณาระบุหมายเลขผู้เล่นที่เข้าและออก');
+            return;
+        }
+        
+        const { isTeamA, subToEdit, additionalSubs } = currentSubContext;
+        
+        // Create players array with main substitution and any additional ones
+        const players = [{ playerIn, playerOut }, ...additionalSubs];
+        
+        dataStorage.saveSubstitutionWindow(isTeamA, players, subToEdit);
+        updateUI();
+        
+        subModal.style.display = 'none';
+    }
+
+    function updateSubstitutionButtonsState() {
+        // Disable substitution buttons if max windows reached
+        if (dataStorage.hasReachedMaxSubWindows(true)) {
+            teamASubBtn.disabled = true;
+            teamASubBtn.classList.add('disabled');
+        } else {
+            teamASubBtn.disabled = false;
+            teamASubBtn.classList.remove('disabled');
+        }
+        
+        if (dataStorage.hasReachedMaxSubWindows(false)) {
+            teamBSubBtn.disabled = true;
+            teamBSubBtn.classList.add('disabled');
+        } else {
+            teamBSubBtn.disabled = false;
+            teamBSubBtn.classList.remove('disabled');
+        }
+    }
+
+    function renderTeamCards() {
+        // Render Team A cards
+        if (matchState.teamA.cards.length > 0) {
+            teamACardsEmpty.style.display = 'none';
+            teamACardsContent.innerHTML = matchState.teamA.cards
+                .sort((a, b) => {
+                    const timeA = a.timeStamp.replace(/\+.*$/, '');
+                    const timeB = b.timeStamp.replace(/\+.*$/, '');
+                    const [minsA, secsA] = timeA.split(':').map(Number);
+                    const [minsB, secsB] = timeB.split(':').map(Number);
+                    if (minsA !== minsB) return minsA - minsB;
+                    return secsA - secsB;
+                })
+                .map(card => `
+                    <div class="event-card">
+                        <div class="event-icon ${card.isYellow ? 'yellow-icon' : 'red-icon'}">
+                            <i class="fas fa-square"></i>
+                        </div>
+                        <div class="event-details">
+                            <div class="event-title">หมายเลข ${card.playerNumber}</div>
+                            <div class="event-time">${card.timeStamp}</div>
+                        </div>
+                        <button class="edit-btn" onclick="editCard(true, '${card.id}')">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
+                    </div>
+                `)
+                .join('');
+        } else {
+            teamACardsEmpty.style.display = 'flex';
+        }
+        
+        // Render Team B cards
+        if (matchState.teamB.cards.length > 0) {
+            teamBCardsEmpty.style.display = 'none';
+            teamBCardsContent.innerHTML = matchState.teamB.cards
+                .sort((a, b) => {
+                    const timeA = a.timeStamp.replace(/\+.*$/, '');
+                    const timeB = b.timeStamp.replace(/\+.*$/, '');
+                    const [minsA, secsA] = timeA.split(':').map(Number);
+                    const [minsB, secsB] = timeB.split(':').map(Number);
+                    if (minsA !== minsB) return minsA - minsB;
+                    return secsA - secsB;
+                })
+                .map(card => `
+                    <div class="event-card">
+                        <div class="event-icon ${card.isYellow ? 'yellow-icon' : 'red-icon'}">
+                            <i class="fas fa-square"></i>
+                        </div>
+                        <div class="event-details">
+                            <div class="event-title">หมายเลข ${card.playerNumber}</div>
+                            <div class="event-time">${card.timeStamp}</div>
+                        </div>
+                        <button class="edit-btn" onclick="editCard(false, '${card.id}')">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
+                    </div>
+                `)
+                .join('');
+        } else {
+            teamBCardsEmpty.style.display = 'flex';
+        }
+    }
+
+    function renderTeamSubstitutions() {
+        // Group substitutions by window for Team A
+        const teamAWindows = dataStorage.groupSubstitutionsByWindow(matchState.teamA.substitutions);
+        
+        if (teamAWindows.length > 0) {
+            teamASubsEmpty.style.display = 'none';
+            teamASubsContent.innerHTML = teamAWindows
+                .map(window => {
+                    const subs = window.substitutions.map(sub => `
+                        <p>เข้า: ${sub.playerInNumber} - ออก: ${sub.playerOutNumber}</p>
+                    `).join('');
+                    
+                    return `
+                        <div class="event-card">
+                            <div class="event-icon sub-icon-a">
+                                <i class="fas fa-exchange-alt"></i>
+                            </div>
+                            <div class="event-details">
+                                <div class="event-title">การเปลี่ยนตัว</div>
+                                <div class="event-time">${window.timeStamp}</div>
+                                ${subs}
+                            </div>
+                            <button class="edit-btn" onclick="editSubstitution(true, '${window.id}')">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </div>
+                    `;
+                })
+                .join('');
+        } else {
+            teamASubsEmpty.style.display = 'flex';
+        }
+        
+        // Group substitutions by window for Team B
+        const teamBWindows = dataStorage.groupSubstitutionsByWindow(matchState.teamB.substitutions);
+        
+        if (teamBWindows.length > 0) {
+            teamBSubsEmpty.style.display = 'none';
+            teamBSubsContent.innerHTML = teamBWindows
+                .map(window => {
+                    const subs = window.substitutions.map(sub => `
+                        <p>เข้า: ${sub.playerInNumber} - ออก: ${sub.playerOutNumber}</p>
+                    `).join('');
+                    
+                    return `
+                        <div class="event-card">
+                            <div class="event-icon sub-icon-b">
+                                <i class="fas fa-exchange-alt"></i>
+                            </div>
+                            <div class="event-details">
+                                <div class="event-title">การเปลี่ยนตัว</div>
+                                <div class="event-time">${window.timeStamp}</div>
+                                ${subs}
+                            </div>
+                            <button class="edit-btn" onclick="editSubstitution(false, '${window.id}')">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </div>
+                    `;
+                })
+                .join('');
+        } else {
+            teamBSubsEmpty.style.display = 'flex';
+        }
+    }
+
+    function showResetConfirmDialog() {
+        resetConfirmModal.style.display = 'flex';
+    }
+
+    function resetAllData() {
+        stopTimers();
+        dataStorage.resetMatchState();
+        matchState = dataStorage.matchState;
+        updateUI();
+        resetConfirmModal.style.display = 'none';
+    }
+
+    // Global functions for edit buttons
+    window.editCard = function(isTeamA, cardId) {
+        const team = isTeamA ? matchState.teamA : matchState.teamB;
+        const card = team.cards.find(c => c.id === cardId);
+        if (card) {
+            showCardDialog(isTeamA, card.isYellow, cardId);
+        }
+    };
+
+    window.editSubstitution = function(isTeamA, windowId) {
+        showSubstitutionDialog(isTeamA, windowId);
+    };
+};
