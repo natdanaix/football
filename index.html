@@ -30,6 +30,9 @@
             <button class="control-btn start-btn" id="startMatchBtn">
                 <i class="fas fa-play"></i> Start Match
             </button>
+            <button class="control-btn start-second-btn" id="startSecondHalfBtn" style="display: none;">
+                <i class="fas fa-play"></i> Start Second Half
+            </button>
             <button class="control-btn reset-btn" id="resetDataBtn">
                 <i class="fas fa-undo"></i> Reset Data
             </button>
@@ -52,7 +55,10 @@
                     <button class="action-btn yellow-btn" id="teamAYellowBtn">Yellow Card</button>
                     <button class="action-btn red-btn" id="teamARedBtn">Red Card</button>
                     <button class="action-btn goal-btn" id="teamAGoalBtn">Goal</button>
-                    <button class="action-btn sub-btn-a" id="teamASubBtn">Substitution</button>
+                    <div class="sub-button-group">
+                        <button class="action-btn sub-btn-a" id="teamASubBtn">Substitution</button>
+                        <button class="action-btn halftime-sub-btn-a" id="teamAHalftimeSubBtn">Halftime Sub</button>
+                    </div>
                 </div>
                 <div class="team-content">
                     <div class="tab-container">
@@ -86,7 +92,10 @@
                     <button class="action-btn yellow-btn" id="teamBYellowBtn">Yellow Card</button>
                     <button class="action-btn red-btn" id="teamBRedBtn">Red Card</button>
                     <button class="action-btn goal-btn" id="teamBGoalBtn">Goal</button>
-                    <button class="action-btn sub-btn-b" id="teamBSubBtn">Substitution</button>
+                    <div class="sub-button-group">
+                        <button class="action-btn sub-btn-b" id="teamBSubBtn">Substitution</button>
+                        <button class="action-btn halftime-sub-btn-b" id="teamBHalftimeSubBtn">Halftime Sub</button>
+                    </div>
                 </div>
                 <div class="team-content">
                     <div class="tab-container">
@@ -228,5 +237,6 @@
     </div>
 
     <script src="football-tracker.js"></script>
+    <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'91c35a3c7a55451d',t:'MTc0MTI3OTgzMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
 </html>
