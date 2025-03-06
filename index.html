@@ -67,7 +67,12 @@
             font-weight: bold;
         }
 
-        .settings-btn {
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .settings-btn, .reset-btn {
             background: none;
             border: none;
             color: white;
@@ -175,6 +180,13 @@
             border-radius: 6px;
             font-weight: bold;
             color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .team-score {
+            font-size: 1.5rem;
         }
 
         .team-a .team-header {
@@ -219,6 +231,16 @@
 
         .sub-btn-b {
             background-color: var(--team-b-color);
+            color: white;
+        }
+
+        .goal-btn-a {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .goal-btn-b {
+            background-color: #4CAF50;
             color: white;
         }
 
@@ -300,6 +322,10 @@
 
         .sub-icon-b {
             color: var(--team-b-color);
+        }
+
+        .goal-icon {
+            color: #4CAF50;
         }
 
         .event-details {
@@ -506,9 +532,14 @@
         <header>
             <div class="header-content">
                 <div class="logo">Football Match Tracker</div>
-                <button class="settings-btn" id="settingsBtn">
-                    <i class="fas fa-cog"></i>
-                </button>
+                <div class="header-buttons">
+                    <button class="settings-btn" id="settingsBtn">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    <button class="reset-btn" id="resetBtn">
+                        <i class="fas fa-undo"></i>
+                    </button>
+                </div>
             </div>
             <div class="timer-container">
                 <div class="match-time" id="matchTime">00:00</div>
@@ -520,6 +551,9 @@
         <div class="match-controls" id="matchControls">
             <button class="control-btn start-btn" id="startMatchBtn">
                 <i class="fas fa-play"></i> เริ่มการแข่งขัน
+            </button>
+            <button class="control-btn" id="loadMatchBtn" style="background-color: #FF9800; color: white;">
+                <i class="fas fa-file-upload"></i> โหลดการแข่งขัน
             </button>
         </div>
         
@@ -535,17 +569,19 @@
         <div class="teams-container">
             <!-- Team A Panel -->
             <div class="team-panel team-a">
-                <div class="team-header" id="teamAHeader">ทีม A</div>
+                <div class="team-header" id="teamAHeader">ทีม A <span class="team-score" id="teamAScore">0</span></div>
                 <div class="team-actions">
                     <button class="action-btn yellow-btn" id="teamAYellowBtn">ใบเหลือง</button>
                     <button class="action-btn red-btn" id="teamARedBtn">ใบแดง</button>
                     <button class="action-btn sub-btn-a" id="teamASubBtn">เปลี่ยนตัว</button>
+                    <button class="action-btn goal-btn-a" id="teamAGoalBtn">ประตู</button>
                 </div>
                 <div class="team-content">
                     <div class="tab-container">
                         <div class="tabs">
                             <div class="tab active" data-team="a" data-tab="cards">ใบเตือน</div>
                             <div class="tab" data-team="a" data-tab="subs">เปลี่ยนตัว</div>
+                            <div class="tab" data-team="a" data-tab="goals">ประตู</div>
                         </div>
                         <div class="tab-content active" id="teamACardsContent">
                             <div class="empty-state" id="teamACardsEmpty">
@@ -561,6 +597,13 @@
                             </div>
                             <!-- Substitution events will be added here -->
                         </div>
+                        <div class="tab-content" id="teamAGoalsContent">
+                            <div class="empty-state" id="teamAGoalsEmpty">
+                                <i class="fas fa-futbol empty-icon"></i>
+                                <p>ยังไม่มีประตู</p>
+                            </div>
+                            <!-- Goal events will be added here -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -570,17 +613,19 @@
             
             <!-- Team B Panel -->
             <div class="team-panel team-b">
-                <div class="team-header" id="teamBHeader">ทีม B</div>
+                <div class="team-header" id="teamBHeader">ทีม B <span class="team-score" id="teamBScore">0</span></div>
                 <div class="team-actions">
                     <button class="action-btn yellow-btn" id="teamBYellowBtn">ใบเหลือง</button>
                     <button class="action-btn red-btn" id="teamBRedBtn">ใบแดง</button>
                     <button class="action-btn sub-btn-b" id="teamBSubBtn">เปลี่ยนตัว</button>
+                    <button class="action-btn goal-btn-b" id="teamBGoalBtn">ประตู</button>
                 </div>
                 <div class="team-content">
                     <div class="tab-container">
                         <div class="tabs">
                             <div class="tab active" data-team="b" data-tab="cards">ใบเตือน</div>
                             <div class="tab" data-team="b" data-tab="subs">เปลี่ยนตัว</div>
+                            <div class="tab" data-team="b" data-tab="goals">ประตู</div>
                         </div>
                         <div class="tab-content active" id="teamBCardsContent">
                             <div class="empty-state" id="teamBCardsEmpty">
@@ -595,6 +640,13 @@
                                 <p>ยังไม่มีข้อมูล</p>
                             </div>
                             <!-- Substitution events will be added here -->
+                        </div>
+                        <div class="tab-content" id="teamBGoalsContent">
+                            <div class="empty-state" id="teamBGoalsEmpty">
+                                <i class="fas fa-futbol empty-icon"></i>
+                                <p>ยังไม่มีประตู</p>
+                            </div>
+                            <!-- Goal events will be added here -->
                         </div>
                     </div>
                 </div>
@@ -673,6 +725,24 @@
             <div class="modal-actions" id="subModalActions">
                 <button class="modal-btn cancel-btn" id="cancelSubBtn">ยกเลิก</button>
                 <button class="modal-btn confirm-btn" id="saveSubBtn">ยืนยัน</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Goal Event Modal -->
+    <div class="modal" id="goalModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="goalModalTitle">ประตู - ทีม A</div>
+                <button class="close-btn" id="closeGoalModalBtn">×</button>
+            </div>
+            <div class="input-group">
+                <div class="input-label">หมายเลขผู้เล่น</div>
+                <input type="number" class="input-field" id="goalPlayerNumberInput" placeholder="เลขผู้เล่น">
+            </div>
+            <div class="modal-actions" id="goalModalActions">
+                <button class="modal-btn cancel-btn" id="cancelGoalBtn">ยกเลิก</button>
+                <button class="modal-btn confirm-btn" id="saveGoalBtn">ยืนยัน</button>
             </div>
         </div>
     </div>
