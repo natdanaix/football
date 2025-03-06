@@ -28,12 +28,19 @@ document.addEventListener('DOMContentLoaded', function() {
         activeSubWindow: {
             teamA: false,
             teamB: false
-        }
+        },
+        // New properties for 45-minute regulation time
+        isRegulationCompleted: false,
+        injuryCountdownActive: false,
+        injuryCountdownSeconds: 0,
+        injuryCountdownDisplay: "00:00",
+        regulationMinutes: 45 // Configurable regulation time in minutes
     };
 
     // Timer variables
     let matchTimer;
     let injuryTimer;
+    let injuryCountdownTimer;
     let autoSaveTimer;
 
     // DOM Elements
@@ -90,6 +97,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const teamBColorPicker = document.getElementById('teamBColorPicker');
     const saveTeamSettingsBtn = document.getElementById('saveTeamSettingsBtn');
     const cancelTeamSettingsBtn = document.getElementById('cancelTeamSettingsBtn');
+    
+    // Create regulation time input
+    const regulationTimeInput = document.createElement('input');
+    regulationTimeInput.type = 'number';
+    regulationTimeInput.id = 'regulationTimeInput';
+    regulationTimeInput.className = 'input-field';
+    regulationTimeInput.min = 1;
+    regulationTimeInput.max = 90;
+    regulationTimeInput.value = 45;
 
     // Card Modal (reused for goals)
     const cardModal = document.getElementById('cardModal');
@@ -339,7 +355,17 @@ document.addEventListener('DOMContentLoaded', function() {
         
         updateSubstitutionButtonsState();
         
-        matchTimeEl.textContent = matchState.elapsedTime;
+        // Update the time display based on match state
+        if (matchState.injuryCountdownActive) {
+            // Display injury countdown
+            matchTimeEl.textContent = matchState.injuryCountdownDisplay;
+            // Apply a different style to indicate countdown mode
+            matchTimeEl.style.backgroundColor = '#D32F2F';
+        } else {
+            // Normal time display
+            matchTimeEl.textContent = matchState.elapsedTime;
+            matchTimeEl.style.backgroundColor = '#0D47A1';
+        }
         
         if (matchState.isInjuryTimeActive) {
             injuryTimeEl.textContent = matchState.currentInjuryTimeDisplay;
@@ -519,6 +545,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function startMatch() {
         matchState.isMatchStarted = true;
         matchState.startTime = new Date();
+        matchState.isRegulationCompleted = false;
+        matchState.injuryCountdownActive = false;
         startTimers();
         updateUI();
         saveMatchData();
@@ -527,682 +555,92 @@ document.addEventListener('DOMContentLoaded', function() {
     function startTimers() {
         clearInterval(matchTimer);
         clearInterval(injuryTimer);
+        clearInterval(injuryCountdownTimer);
+        
         matchTimer = setInterval(updateMatchTime, 1000);
+        
         if (matchState.isInjuryTimeActive && matchState.currentInjuryStartTime) {
             injuryTimer = setInterval(updateInjuryTime, 1000);
+        }
+        
+        if (matchState.injuryCountdownActive) {
+            injuryCountdownTimer = setInterval(updateInjuryCountdown, 1000);
         }
     }
 
     function updateMatchTime() {
         if (!matchState.startTime) return;
+        
+        // If injury countdown is active, don't update regular match time
+        if (matchState.injuryCountdownActive) return;
+        
         const now = new Date();
         const difference = now - matchState.startTime;
         const minutes = Math.floor(difference / 60000);
         const seconds = Math.floor((difference % 60000) / 1000);
+        
         matchState.elapsedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
         matchTimeEl.textContent = matchState.elapsedTime;
-    }
-
-    function toggleInjuryTime() {
-        if (!matchState.isMatchStarted) {
-            alert('Please start the match first');
-            return;
-        }
         
-        matchState.isInjuryTimeActive = !matchState.isInjuryTimeActive;
-        
-        if (matchState.isInjuryTimeActive) {
-            matchState.currentInjuryStartTime = new Date();
-            injuryTimer = setInterval(updateInjuryTime, 1000);
-            injuryTimeEl.style.display = 'block';
-            totalInjuryEl.style.display = 'none';
-            injuryBtn.classList.add('active');
-            injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Stop Injury Time';
-            injuryFab.classList.add('injury-active');
-        } else {
-            if (matchState.currentInjuryStartTime) {
-                const now = new Date();
-                const injuryDuration = now - matchState.currentInjuryStartTime;
-                const injurySeconds = Math.floor(injuryDuration / 1000);
-                matchState.totalInjurySeconds += injurySeconds;
-                const mins = String(Math.floor(injurySeconds / 60)).padStart(2, '0');
-                const secs = String(injurySeconds % 60).padStart(2, '0');
-                matchState.injuryTimePeriods.push(`+${mins}:${secs}`);
-                showInjuryTimeSummary(injurySeconds);
-            }
-            clearInterval(injuryTimer);
-            matchState.currentInjuryStartTime = null;
-            matchState.currentInjuryTimeDisplay = '+00:00';
-            injuryTimeEl.style.display = 'none';
-            totalInjuryEl.textContent = getTotalInjuryTimeDisplay();
-            totalInjuryEl.style.display = 'block';
-            injuryBtn.classList.remove('active');
-            injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Injury Time';
-            injuryFab.classList.remove('injury-active');
-        }
-        
-        saveMatchData();
-    }
-
-    function updateInjuryTime() {
-        if (!matchState.currentInjuryStartTime) return;
-        const now = new Date();
-        const difference = now - matchState.currentInjuryStartTime;
-        const minutes = Math.floor(difference / 60000);
-        const seconds = Math.floor((difference % 60000) / 1000);
-        matchState.currentInjuryTimeDisplay = `+${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-        injuryTimeEl.textContent = matchState.currentInjuryTimeDisplay;
-    }
-
-    function getTotalInjuryTimeDisplay() {
-        const minutes = Math.floor(matchState.totalInjurySeconds / 60);
-        const seconds = matchState.totalInjurySeconds % 60;
-        return `+${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-    }
-
-    function showInjuryTimeSummary(currentPeriodSeconds) {
-        const totalMins = String(Math.floor(matchState.totalInjurySeconds / 60)).padStart(2, '0');
-        const totalSecs = String(matchState.totalInjurySeconds % 60).padStart(2, '0');
-        const currentMins = String(Math.floor(currentPeriodSeconds / 60)).padStart(2, '0');
-        const currentSecs = String(currentPeriodSeconds % 60).padStart(2, '0');
-        
-        let summaryHTML = `
-            <p>Current Injury Time Period: +${currentMins}:${currentSecs}</p>
-            <p style="margin-top: 8px;">Total Accumulated Injury Time: +${totalMins}:${totalSecs}</p>
-        `;
-        
-        if (matchState.injuryTimePeriods.length > 1) {
-            summaryHTML += `
-                <div style="margin-top: 16px;">
-                    <p>Injury Time History:</p>
-                    <div style="margin-top: 8px;">
-                        ${matchState.injuryTimePeriods.map((period, index) => 
-                            `<p>Period ${index + 1}: ${period}</p>`
-                        ).join('')}
-                    </div>
-                </div>
-            `;
-        }
-        
-        injurySummaryContent.innerHTML = summaryHTML;
-        injurySummaryModal.style.display = 'flex';
-    }
-
-    function showTeamCustomizationDialog() {
-        teamANameInput.value = matchState.teamA.name;
-        teamBNameInput.value = matchState.teamB.name;
-        initColorPickers();
-        teamSettingsModal.style.display = 'flex';
-    }
-
-    function saveTeamSettings() {
-        const teamAName = teamANameInput.value.trim() || 'Team A';
-        const teamBName = teamBNameInput.value.trim() || 'Team B';
-        const teamAColorOption = document.querySelector('#teamAColorPicker .color-option.selected');
-        const teamBColorOption = document.querySelector('#teamBColorPicker .color-option.selected');
-        const teamAColor = teamAColorOption ? teamAColorOption.style.backgroundColor : matchState.teamA.color;
-        const teamBColor = teamBColorOption ? teamBColorOption.style.backgroundColor : matchState.teamB.color;
-        
-        matchState.teamA.name = teamAName;
-        matchState.teamA.color = teamAColor;
-        matchState.teamB.name = teamBName;
-        matchState.teamB.color = teamBColor;
-        
-        updateUI();
-        saveMatchData();
-        teamSettingsModal.style.display = 'none';
-    }
-
-    function showCardDialog(isTeamA, isYellow, isGoal, cardToEdit = null) {
-        if (!matchState.isMatchStarted && !cardToEdit) {
-            alert('Please start the match first');
-            return;
-        }
-        
-        currentCardContext = { isTeamA, isYellow, isGoal, cardToEdit };
-        const teamName = isTeamA ? matchState.teamA.name : matchState.teamB.name;
-        const eventType = isGoal ? 'Goal' : (isYellow ? 'Yellow Card' : 'Red Card');
-        cardModalTitle.textContent = `${cardToEdit ? 'Edit ' : ''}${eventType} - ${teamName}`;
-        playerNumberInput.value = cardToEdit ? cardToEdit.playerNumber : '';
-        
-        if (cardToEdit) {
-            let deleteBtn = document.getElementById('deleteCardBtn');
-            if (!deleteBtn) {
-                deleteBtn = document.createElement('button');
-                deleteBtn.id = 'deleteCardBtn';
-                deleteBtn.className = 'modal-btn delete-btn';
-                deleteBtn.textContent = 'Delete';
-                deleteBtn.addEventListener('click', deleteCardEvent);
-                cardModalActions.insertBefore(deleteBtn, cancelCardBtn);
-            }
-        } else {
-            const deleteBtn = document.getElementById('deleteCardBtn');
-            if (deleteBtn) deleteBtn.remove();
-        }
-        
-        saveCardBtn.style.backgroundColor = isGoal ? '#4CAF50' : (isYellow ? '#FFC107' : '#D32F2F');
-        saveCardBtn.style.color = isYellow ? 'black' : 'white';
-        cardModal.style.display = 'flex';
-        playerNumberInput.focus();
-    }
-
-    function saveCardEvent() {
-        const playerNumber = playerNumberInput.value.trim();
-        if (!playerNumber) {
-            alert('Please enter a player number');
-            return;
-        }
-        
-        const { isTeamA, isYellow, isGoal, cardToEdit } = currentCardContext;
-        const currentTimeStamp = cardToEdit ? cardToEdit.timeStamp : 
-            (matchState.isInjuryTimeActive ? 
-                `${matchState.elapsedTime} ${matchState.currentInjuryTimeDisplay}` : 
-                matchState.elapsedTime);
-        
-        if (cardToEdit) {
-            cardToEdit.playerNumber = playerNumber;
-            if (cardToEdit.isGoal && !isGoal) {
-                if (isTeamA) matchState.teamA.goals--;
-                else matchState.teamB.goals--;
-            } else if (!cardToEdit.isGoal && isGoal) {
-                if (isTeamA) matchState.teamA.goals++;
-                else matchState.teamB.goals++;
-            }
-        } else {
-            const newCard = {
-                id: Date.now().toString(),
-                isYellow,
-                isGoal,
-                timeStamp: currentTimeStamp,
-                playerNumber
-            };
-            if (isTeamA) {
-                matchState.teamA.cards.push(newCard);
-                if (isGoal) matchState.teamA.goals++;
-            } else {
-                matchState.teamB.cards.push(newCard);
-                if (isGoal) matchState.teamB.goals++;
-            }
-        }
-        
-        renderTeamCards();
-        updateUI();
-        saveMatchData();
-        cardModal.style.display = 'none';
-    }
-
-    function deleteCardEvent() {
-        const { isTeamA, cardToEdit } = currentCardContext;
-        if (!cardToEdit) return;
-        if (isTeamA) {
-            matchState.teamA.cards = matchState.teamA.cards.filter(card => card.id !== cardToEdit.id);
-            if (cardToEdit.isGoal) matchState.teamA.goals--;
-        } else {
-            matchState.teamB.cards = matchState.teamB.cards.filter(card => card.id !== cardToEdit.id);
-            if (cardToEdit.isGoal) matchState.teamB.goals--;
-        }
-        renderTeamCards();
-        updateUI();
-        saveMatchData();
-        cardModal.style.display = 'none';
-    }
-
-    function showSubstitutionDialog(isTeamA, windowToEdit = null) {
-        if (!matchState.isMatchStarted && !windowToEdit) {
-            alert('Please start the match first');
-            return;
-        }
-        
-        if (!windowToEdit && !matchState.activeSubWindow[isTeamA ? 'teamA' : 'teamB']) {
-            const team = isTeamA ? matchState.teamA : matchState.teamB;
-            if (team.subWindows >= 3) {
-                alert(`${team.name} has used all 3 substitution windows`);
-                return;
-            }
-        }
-        
-        currentSubContext = { isTeamA, windowToEdit, additionalSubs: [] };
-        const teamName = isTeamA ? matchState.teamA.name : matchState.teamB.name;
-        subModalTitle.textContent = `${windowToEdit ? 'Edit ' : ''}Substitution - ${teamName}`;
-        playerInInput.value = '';
-        playerOutInput.value = '';
-        
-        const additionalSubsContainer = document.getElementById('additionalSubsContainer');
-        if (!additionalSubsContainer) {
-            const modalContent = subModal.querySelector('.modal-content');
-            modalContent.insertBefore(addAnotherSubSection, subModalActions);
-            document.getElementById('addAnotherSubBtn').addEventListener('click', addAnotherSubstitution);
-        } else {
-            additionalSubsContainer.innerHTML = '';
-        }
-        
-        if (windowToEdit) {
-            const subs = (isTeamA ? matchState.teamA.substitutions : matchState.teamB.substitutions)
-                .filter(sub => sub.windowId === windowToEdit || sub.id === windowToEdit);
-            if (subs.length > 0) {
-                playerInInput.value = subs[0].playerInNumber;
-                playerOutInput.value = subs[0].playerOutNumber;
-                if (subs.length > 1) {
-                    for (let i = 1; i < subs.length; i++) {
-                        const newSubFields = createSubstitutionFields(subs[i].playerInNumber, subs[i].playerOutNumber);
-                        document.getElementById('additionalSubsContainer').appendChild(newSubFields);
-                    }
-                }
-            }
-            let deleteBtn = document.getElementById('deleteSubWindowBtn');
-            if (!deleteBtn) {
-                deleteBtn = document.createElement('button');
-                deleteBtn.id = 'deleteSubWindowBtn';
-                deleteBtn.className = 'modal-btn delete-btn';
-                deleteBtn.textContent = 'Delete This Substitution Window';
-                deleteBtn.addEventListener('click', deleteSubstitutionWindow);
-                subModalActions.insertBefore(deleteBtn, cancelSubBtn);
-            }
-        } else {
-            const deleteBtn = document.getElementById('deleteSubWindowBtn');
-            if (deleteBtn) deleteBtn.remove();
-        }
-        
-        saveSubBtn.style.backgroundColor = isTeamA ? matchState.teamA.color : matchState.teamB.color;
-        subModal.style.display = 'flex';
-        playerInInput.focus();
-    }
-
-    function createSubstitutionFields(playerIn = '', playerOut = '') {
-        const subFieldsContainer = document.createElement('div');
-        subFieldsContainer.className = 'substitution-fields';
-        subFieldsContainer.innerHTML = `
-            <div class="sub-header">
-                <span>Additional Player</span>
-                <button type="button" class="remove-sub-btn">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="input-group">
-                <div class="input-label">Player In Number</div>
-                <input type="number" class="input-field player-in" placeholder="Player In Number" value="${playerIn}">
-            </div>
-            <div class="input-group">
-                <div class="input-label">Player Out Number</div>
-                <input type="number" class="input-field player-out" placeholder="Player Out Number" value="${playerOut}">
-            </div>
-        `;
-        
-        subFieldsContainer.querySelector('.remove-sub-btn').addEventListener('click', function() {
-            subFieldsContainer.remove();
-        });
-        
-        return subFieldsContainer;
-    }
-
-    function addAnotherSubstitution() {
-        const newSubFields = createSubstitutionFields();
-        document.getElementById('additionalSubsContainer').appendChild(newSubFields);
-    }
-
-    function closeSubstitutionDialog() {
-        subModal.style.display = 'none';
-        if (!currentSubContext.windowToEdit) {
-            const team = currentSubContext.isTeamA ? 'teamA' : 'teamB';
-            if (matchState.activeSubWindow[team]) {
-                matchState.activeSubWindow[team] = false;
-                updateSubstitutionButtonsState();
+        // Check if we've reached regulation time (45 minutes)
+        if (minutes >= matchState.regulationMinutes && !matchState.isRegulationCompleted) {
+            matchState.isRegulationCompleted = true;
+            
+            // Only start the injury countdown if injury time has been recorded
+            if (matchState.totalInjurySeconds > 0) {
+                startInjuryCountdown();
             }
         }
     }
 
-    function saveSubstitutionEvent() {
-        const playerIn = playerInInput.value.trim();
-        const playerOut = playerOutInput.value.trim();
-        if (!playerIn || !playerOut) {
-            alert('Please enter both player in and player out numbers');
-            return;
-        }
-        
-        const { isTeamA, windowToEdit } = currentSubContext;
-        const team = isTeamA ? 'teamA' : 'teamB';
-        const currentTimeStamp = windowToEdit ? 
-            (isTeamA ? matchState.teamA.substitutions : matchState.teamB.substitutions)
-                .find(sub => sub.windowId === windowToEdit || sub.id === windowToEdit)?.timeStamp || matchState.elapsedTime
-            : 
-            (matchState.isInjuryTimeActive ? 
-                `${matchState.elapsedTime} ${matchState.currentInjuryTimeDisplay}` : 
-                matchState.elapsedTime);
-        
-        const windowId = windowToEdit || Date.now().toString();
-        const substitutions = [];
-        
-        substitutions.push({
-            id: Date.now().toString() + '-1',
-            playerInNumber: playerIn,
-            playerOutNumber: playerOut,
-            timeStamp: currentTimeStamp,
-            windowId: windowId
-        });
-        
-        const additionalSubsContainer = document.getElementById('additionalSubsContainer');
-        if (additionalSubsContainer) {
-            const additionalFields = additionalSubsContainer.querySelectorAll('.substitution-fields');
-            additionalFields.forEach((field, index) => {
-                const addPlayerIn = field.querySelector('.player-in').value.trim();
-                const addPlayerOut = field.querySelector('.player-out').value.trim();
-                if (addPlayerIn && addPlayerOut) {
-                    substitutions.push({
-                        id: Date.now().toString() + `-${index + 2}`,
-                        playerInNumber: addPlayerIn,
-                        playerOutNumber: addPlayerOut,
-                        timeStamp: currentTimeStamp,
-                        windowId: windowId
-                    });
-                }
-            });
-        }
-        
-        if (windowToEdit) {
-            const newSubsList = (isTeamA ? matchState.teamA.substitutions : matchState.teamB.substitutions)
-                .filter(sub => sub.windowId !== windowToEdit && sub.id !== windowToEdit);
-            if (isTeamA) matchState.teamA.substitutions = [...newSubsList, ...substitutions];
-            else matchState.teamB.substitutions = [...newSubsList, ...substitutions];
-        } else {
-            matchState[team].subWindows++;
-            if (isTeamA) matchState.teamA.substitutions = [...matchState.teamA.substitutions, ...substitutions];
-            else matchState.teamB.substitutions = [...matchState.teamB.substitutions, ...substitutions];
-            matchState.activeSubWindow[team] = false;
-        }
-        
-        renderTeamSubstitutions();
-        updateSubstitutionButtonsState();
-        saveMatchData();
-        subModal.style.display = 'none';
-    }
-
-    function deleteSubstitutionWindow() {
-        const { isTeamA, windowToEdit } = currentSubContext;
-        if (!windowToEdit) return;
-        
-        const team = isTeamA ? matchState.teamA : matchState.teamB;
-        const subsInWindow = team.substitutions.filter(
-            sub => sub.windowId === windowToEdit || sub.id === windowToEdit
-        );
-        team.substitutions = team.substitutions.filter(
-            sub => sub.windowId !== windowToEdit && sub.id !== windowToEdit
-        );
-        if (subsInWindow.length > 0) team.subWindows = Math.max(0, team.subWindows - 1);
-        
-        renderTeamSubstitutions();
-        updateSubstitutionButtonsState();
-        saveMatchData();
-        subModal.style.display = 'none';
-    }
-
-    function showResetConfirmDialog() {
-        resetConfirmModal.style.display = 'flex';
-    }
-
-   function resetAllData() {
+    function startInjuryCountdown() {
+        // Stop tracking normal match time
         clearInterval(matchTimer);
-        clearInterval(injuryTimer);
-        matchState = {
-            isMatchStarted: false,
-            startTime: null,
-            elapsedTime: "00:00",
-            teamA: {
-                name: "Team A",
-                color: "#1976D2",
-                cards: [],
-                substitutions: [],
-                subWindows: 0,
-                goals: 0
-            },
-            teamB: {
-                name: "Team B",
-                color: "#D32F2F",
-                cards: [],
-                substitutions: [],
-                subWindows: 0,
-                goals: 0
-            },
-            isInjuryTimeActive: false,
-            totalInjurySeconds: 0,
-            injuryTimePeriods: [],
-            currentInjuryStartTime: null,
-            currentInjuryTimeDisplay: "+00:00",
-            activeSubWindow: {
-                teamA: false,
-                teamB: false
-            }
-        };
-        clearMatchData();
-        updateUI();
-     
-    }
-
-    function endMatch() {
-        if (!matchState.isMatchStarted) {
-            alert('There is no match to end');
-            return;
-        }
-        clearInterval(matchTimer);
-        clearInterval(injuryTimer);
-        if (matchState.isInjuryTimeActive) toggleInjuryTime();
-        showMatchSummary();
-    }
-
-    function showMatchSummary() {
-        const teamA = matchState.teamA;
-        const teamB = matchState.teamB;
-        const teamAYellowCards = teamA.cards.filter(card => card.isYellow).length;
-        const teamARedCards = teamA.cards.filter(card => !card.isYellow && !card.isGoal).length;
-        const teamAGoals = teamA.goals;
-        const teamBYellowCards = teamB.cards.filter(card => card.isYellow).length;
-        const teamBRedCards = teamB.cards.filter(card => !card.isYellow && !card.isGoal).length;
-        const teamBGoals = teamB.goals;
-        const teamASubWindows = groupSubstitutionsByWindow(teamA.substitutions);
-        const teamBSubWindows = groupSubstitutionsByWindow(teamB.substitutions);
-        const totalMatchTime = matchState.elapsedTime;
-        const totalInjuryTime = getTotalInjuryTimeDisplay();
-
-        let summaryHTML = `
-            <div style="margin-bottom: 16px;">
-                <h3 style="margin-bottom: 8px;">Match Duration</h3>
-                <p>Normal Match Time: ${totalMatchTime}</p>
-                <p>Total Injury Time: ${totalInjuryTime}</p>
-            </div>
-            <div style="margin-bottom: 16px;">
-                <h3 style="margin-bottom: 8px;">${teamA.name}</h3>
-                <p>Goals: ${teamAGoals}</p>
-                <p>Yellow Cards: ${teamAYellowCards}</p>
-                <p>Red Cards: ${teamARedCards}</p>
-                <p>Substitution Windows: ${teamASubWindows.length} (${teamA.substitutions.length} Players)</p>
-                ${teamA.cards.length > 0 ? `
-                    <div style="margin-top: 8px;">
-                        <p>Event Details:</p>
-                        ${teamA.cards.map(card => `
-                            <p style="margin-left: 16px;">- ${card.isGoal ? 'Goal' : (card.isYellow ? 'Yellow Card' : 'Red Card')} #${card.playerNumber} (${card.timeStamp})</p>
-                        `).join('')}
-                    </div>
-                ` : ''}
-                ${teamASubWindows.length > 0 ? `
-                    <div style="margin-top: 8px;">
-                        <p>Substitution Details:</p>
-                        ${teamASubWindows.map((window, index) => `
-                            <p style="margin-left: 16px;">- Window ${index + 1} (${window.timeStamp}):</p>
-                            ${window.substitutions.map(sub => `
-                                <p style="margin-left: 32px;">#${sub.playerInNumber} In, #${sub.playerOutNumber} Out</p>
-                            `).join('')}
-                        `).join('')}
-                    </div>
-                ` : ''}
-            </div>
-            <div>
-                <h3 style="margin-bottom: 8px;">${teamB.name}</h3>
-                <p>Goals: ${teamBGoals}</p>
-                <p>Yellow Cards: ${teamBYellowCards}</p>
-                <p>Red Cards: ${teamBRedCards}</p>
-                <p>Substitution Windows: ${teamBSubWindows.length} (${teamB.substitutions.length} Players)</p>
-                ${teamB.cards.length > 0 ? `
-                    <div style="margin-top: 8px;">
-                        <p>Event Details:</p>
-                        ${teamB.cards.map(card => `
-                            <p style="margin-left: 16px;">- ${card.isGoal ? 'Goal' : (card.isYellow ? 'Yellow Card' : 'Red Card')} #${card.playerNumber} (${card.timeStamp})</p>
-                        `).join('')}
-                    </div>
-                ` : ''}
-                ${teamBSubWindows.length > 0 ? `
-                    <div style="margin-top: 8px;">
-                        <p>Substitution Details:</p>
-                        ${teamBSubWindows.map((window, index) => `
-                            <p style="margin-left: 16px;">- Window ${index + 1} (${window.timeStamp}):</p>
-                            ${window.substitutions.map(sub => `
-                                <p style="margin-left: 32px;">#${sub.playerInNumber} In, #${sub.playerOutNumber} Out</p>
-                            `).join('')}
-                        `).join('')}
-                    </div>
-                ` : ''}
-            </div>
-        `;
-
-        matchSummaryContent.innerHTML = summaryHTML;
-        matchSummaryModal.style.display = 'flex';
-        matchState.isMatchStarted = false;
+        
+        // Set up the countdown
+        matchState.injuryCountdownActive = true;
+        matchState.injuryCountdownSeconds = matchState.totalInjurySeconds;
+        
+        // Update UI to show we're in countdown mode
+        updateInjuryCountdown();
+        
+        // Start countdown timer
+        injuryCountdownTimer = setInterval(updateInjuryCountdown, 1000);
+        
+        // Visual indication that we're now in injury time countdown
+        matchTimeEl.style.backgroundColor = '#D32F2F';
+        
+        // Notify with an alert
+        alert(`Regulation time (${matchState.regulationMinutes} minutes) completed. Starting injury time countdown: +${getTotalInjuryTimeDisplay()}`);
+        
         updateUI();
         saveMatchData();
     }
 
-    function saveSummaryAsPdf() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        
-        doc.setFontSize(16);
-        doc.text("Match Summary", 105, 10, { align: "center" });
-        
-        const teamA = matchState.teamA;
-        const teamB = matchState.teamB;
-        const teamAYellowCards = teamA.cards.filter(card => card.isYellow).length;
-        const teamARedCards = teamA.cards.filter(card => !card.isYellow && !card.isGoal).length;
-        const teamAGoals = teamA.goals;
-        const teamBYellowCards = teamB.cards.filter(card => card.isYellow).length;
-        const teamBRedCards = teamB.cards.filter(card => !card.isYellow && !card.isGoal).length;
-        const teamBGoals = teamB.goals;
-        const teamASubWindows = groupSubstitutionsByWindow(teamA.substitutions);
-        const teamBSubWindows = groupSubstitutionsByWindow(teamB.substitutions);
-        
-        let yPos = 20;
-        
-        doc.setFontSize(14);
-        doc.text("Match Duration", 10, yPos);
-        yPos += 10;
-        doc.setFontSize(12);
-        doc.text(`Normal Match Time: ${matchState.elapsedTime}`, 10, yPos);
-        yPos += 7;
-        doc.text(`Total Injury Time: ${getTotalInjuryTimeDisplay()}`, 10, yPos);
-        yPos += 10;
-        
-        doc.setFontSize(14);
-        doc.text(teamA.name, 10, yPos);
-        yPos += 10;
-        doc.setFontSize(12);
-        doc.text(`Goals: ${teamAGoals}`, 10, yPos);
-        yPos += 7;
-        doc.text(`Yellow Cards: ${teamAYellowCards}`, 10, yPos);
-        yPos += 7;
-        doc.text(`Red Cards: ${teamARedCards}`, 10, yPos);
-        yPos += 7;
-        doc.text(`Substitution Windows: ${teamASubWindows.length} (${teamA.substitutions.length} Players)`, 10, yPos);
-        yPos += 7;
-        
-        if (teamA.cards.length > 0) {
-            yPos += 5;
-            doc.text("Event Details:", 10, yPos);
-            yPos += 7;
-            teamA.cards.forEach(card => {
-                doc.text(`- ${card.isGoal ? 'Goal' : (card.isYellow ? 'Yellow Card' : 'Red Card')} #${card.playerNumber} (${card.timeStamp})`, 15, yPos);
-                yPos += 7;
-                if (yPos > 280) {
-                    doc.addPage();
-                    yPos = 10;
-                }
-            });
+    function updateInjuryCountdown() {
+        if (matchState.injuryCountdownSeconds <= 0) {
+            // End the countdown when it reaches zero
+            clearInterval(injuryCountdownTimer);
+            matchState.injuryCountdownActive = false;
+            matchState.injuryCountdownDisplay = "00:00";
+            alert("Injury time countdown completed!");
+            
+            // Optionally, you could auto-end the match here
+            // endMatch();
+            
+            return;
         }
         
-        if (teamASubWindows.length > 0) {
-            yPos += 5;
-            doc.text("Substitution Details:", 10, yPos);
-            yPos += 7;
-            teamASubWindows.forEach((window, index) => {
-                doc.text(`- Window ${index + 1} (${window.timeStamp}):`, 15, yPos);
-                yPos += 7;
-                window.substitutions.forEach(sub => {
-                    doc.text(`  #${sub.playerInNumber} In, #${sub.playerOutNumber} Out`, 20, yPos);
-                    yPos += 7;
-                    if (yPos > 280) {
-                        doc.addPage();
-                        yPos = 10;
-                    }
-                });
-            });
-        }
+        // Decrement the countdown
+        matchState.injuryCountdownSeconds--;
         
-        yPos += 10;
+        // Update the display
+        const minutes = Math.floor(matchState.injuryCountdownSeconds / 60);
+        const seconds = matchState.injuryCountdownSeconds % 60;
+        matchState.injuryCountdownDisplay = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
         
-        doc.setFontSize(14);
-        doc.text(teamB.name, 10, yPos);
-        yPos += 10;
-        doc.setFontSize(12);
-        doc.text(`Goals: ${teamBGoals}`, 10, yPos);
-        yPos += 7;
-        doc.text(`Yellow Cards: ${teamBYellowCards}`, 10, yPos);
-        yPos += 7;
-        doc.text(`Red Cards: ${teamBRedCards}`, 10, yPos);
-        yPos += 7;
-        doc.text(`Substitution Windows: ${teamBSubWindows.length} (${teamB.substitutions.length} Players)`, 10, yPos);
-        yPos += 7;
+        // Update the display element
+        matchTimeEl.textContent = matchState.injuryCountdownDisplay;
         
-        if (teamB.cards.length > 0) {
-            yPos += 5;
-            doc.text("Event Details:", 10, yPos);
-            yPos += 7;
-            teamB.cards.forEach(card => {
-                doc.text(`- ${card.isGoal ? 'Goal' : (card.isYellow ? 'Yellow Card' : 'Red Card')} #${card.playerNumber} (${card.timeStamp})`, 15, yPos);
-                yPos += 7;
-                if (yPos > 280) {
-                    doc.addPage();
-                    yPos = 10;
-                }
-            });
-        }
-        
-        if (teamBSubWindows.length > 0) {
-            yPos += 5;
-            doc.text("Substitution Details:", 10, yPos);
-            yPos += 7;
-            teamBSubWindows.forEach((window, index) => {
-                doc.text(`- Window ${index + 1} (${window.timeStamp}):`, 15, yPos);
-                yPos += 7;
-                window.substitutions.forEach(sub => {
-                    doc.text(`  #${sub.playerInNumber} In, #${sub.playerOutNumber} Out`, 20, yPos);
-                    yPos += 7;
-                    if (yPos > 280) {
-                        doc.addPage();
-                        yPos = 10;
-                    }
-                });
-            });
-        }
-        
-        doc.save(`Match_Summary_${new Date().toISOString().slice(0,10)}.pdf`);
+        saveMatchData();
     }
-
-    window.editCard = function(cardId, isTeamA) {
-        const card = isTeamA 
-            ? matchState.teamA.cards.find(c => c.id === cardId)
-            : matchState.teamB.cards.find(c => c.id === cardId);
-        if (card) showCardDialog(isTeamA, card.isYellow, card.isGoal, card);
-    };
-
-    window.editSubstitutionWindow = function(windowId, isTeamA) {
-        showSubstitutionDialog(isTeamA, windowId);
-    };
-
-    init();
-});
