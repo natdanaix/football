@@ -68,9 +68,11 @@ header {
 
 .timer-container {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
     margin-top: 10px;
+    padding: 0 20px;
+    flex-wrap: wrap;
     gap: 10px;
 }
 
@@ -81,6 +83,25 @@ header {
     font-weight: bold;
     padding: 8px 16px;
     border-radius: 12px;
+    order: 2; /* Ensures match time stays in the center */
+}
+
+.team-score {
+    background-color: #FFFFFF;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    font-weight: bold;
+    padding: 6px 12px;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+#teamAScore {
+    order: 1; /* Left side */
+}
+
+#teamBScore {
+    order: 3; /* Right side */
 }
 
 .injury-time {
@@ -90,6 +111,7 @@ header {
     font-weight: bold;
     padding: 6px 12px;
     border-radius: 12px;
+    order: 4;
 }
 
 .total-injury {
@@ -99,6 +121,7 @@ header {
     font-weight: bold;
     padding: 6px 12px;
     border-radius: 12px;
+    order: 5;
 }
 
 .match-controls {
@@ -140,7 +163,6 @@ header {
 .teams-container {
     display: flex;
     height: calc(100vh - 180px);
-    align-items: stretch;
 }
 
 .team-panel {
@@ -175,19 +197,6 @@ header {
 
 .team-b .team-header {
     background-color: var(--team-b-color);
-}
-
-.score-display {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100px; /* Fixed width to keep it centered */
-    font-size: 2rem;
-    font-weight: bold;
-    color: var(--text-primary);
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .team-actions {
