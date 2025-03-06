@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Football Match Tracker</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
             --team-a-color: #1976D2;
@@ -114,7 +115,7 @@
             padding: 10px;
             background-color: white;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            gap: 10px; /* Added gap between buttons */
+            gap: 10px;
         }
 
         .control-btn {
@@ -330,7 +331,7 @@
             background-color: var(--border-color);
         }
 
-        /* Modalss styles */
+        /* Modal styles */
         .modal {
             display: none;
             position: fixed;
@@ -351,6 +352,8 @@
             border-radius: 8px;
             padding: 20px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .modal-header {
@@ -487,6 +490,13 @@
             margin-bottom: 15px;
             opacity: 0.5;
         }
+
+        /* Scrollable summary container */
+        .summary-container {
+            max-height: 60vh;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
     </style>
 </head>
     
@@ -601,7 +611,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-title">ตั้งค่าทีม</div>
-                <button class="close-btn" id="closeTeamSettingsBtn">&times;</button>
+                <button class="close-btn" id="closeTeamSettingsBtn">×</button>
             </div>
             <div class="input-group">
                 <div class="input-label">ทีมที่ 1</div>
@@ -631,7 +641,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-title" id="cardModalTitle">ใบเหลือง - ทีม A</div>
-                <button class="close-btn" id="closeCardModalBtn">&times;</button>
+                <button class="close-btn" id="closeCardModalBtn">×</button>
             </div>
             <div class="input-group">
                 <div class="input-label">หมายเลขผู้เล่น</div>
@@ -649,7 +659,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-title" id="subModalTitle">เปลี่ยนตัว - ทีม A</div>
-                <button class="close-btn" id="closeSubModalBtn">&times;</button>
+                <button class="close-btn" id="closeSubModalBtn">×</button>
             </div>
             <div class="input-group">
                 <div class="input-label">หมายเลขผู้เล่นที่เข้า</div>
@@ -671,7 +681,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-title">สรุปเวลาทดเจ็บ</div>
-                <button class="close-btn" id="closeInjurySummaryBtn">&times;</button>
+                <button class="close-btn" id="closeInjurySummaryBtn">×</button>
             </div>
             <div id="injurySummaryContent">
                 <!-- Injury time summary will be added here -->
@@ -687,7 +697,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-title">รีเซ็ตข้อมูล</div>
-                <button class="close-btn" id="closeResetConfirmBtn">&times;</button>
+                <button class="close-btn" id="closeResetConfirmBtn">×</button>
             </div>
             <p>คุณต้องการรีเซ็ตข้อมูลทั้งหมดหรือไม่?</p>
             <div class="modal-actions">
@@ -702,12 +712,13 @@
         <div class="modal-content" style="max-width: 500px;">
             <div class="modal-header">
                 <div class="modal-title">สรุปผลการแข่งขัน</div>
-                <button class="close-btn" id="closeMatchSummaryBtn">&times;</button>
+                <button class="close-btn" id="closeMatchSummaryBtn">×</button>
             </div>
-            <div id="matchSummaryContent">
+            <div class="summary-container" id="matchSummaryContent">
                 <!-- Match summary will be added here -->
             </div>
             <div class="modal-actions">
+                <button class="modal-btn confirm-btn" id="saveAsPdfBtn">บันทึกเป็น PDF</button>
                 <button class="modal-btn confirm-btn" id="closeMatchSummaryConfirmBtn">ตกลง</button>
             </div>
         </div>
