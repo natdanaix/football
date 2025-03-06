@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let autoSaveTimer;
 
     // DOM Elements
+    
     const resetDataBtn = document.getElementById('resetDataBtn');
     const matchTimeEl = document.getElementById('matchTime');
     const injuryTimeEl = document.getElementById('injuryTime');
@@ -179,6 +180,7 @@ document.addEventListener('DOMContentLoaded', function() {
         injuryFab.addEventListener('click', toggleInjuryTime);
         endMatchBtn.addEventListener('click', endMatch);
         resetDataBtn.addEventListener('click', resetAllData);
+       
 
         teamAYellowBtn.addEventListener('click', () => showCardDialog(true, true, false));
         teamARedBtn.addEventListener('click', () => showCardDialog(true, false, false));
@@ -320,7 +322,7 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.removeItem('matchData');
     }
 
-   function updateUI() {
+  function updateUI() {
         teamAHeader.textContent = matchState.teamA.name;
         teamAHeader.style.backgroundColor = matchState.teamA.color;
         teamBHeader.textContent = matchState.teamB.name;
@@ -937,7 +939,7 @@ document.addEventListener('DOMContentLoaded', function() {
         resetConfirmModal.style.display = 'flex';
     }
 
-    function resetAllData() {
+   function resetAllData() {
         clearInterval(matchTimer);
         clearInterval(injuryTimer);
         matchState = {
@@ -972,8 +974,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         clearMatchData();
         updateUI();
-        resetConfirmModal.style.display = 'none';
-        showTeamCustomizationDialog();
+     
     }
 
     function endMatch() {
