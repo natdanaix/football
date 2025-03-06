@@ -324,9 +324,11 @@ document.addEventListener('DOMContentLoaded', function() {
     teamBHeader.textContent = matchState.teamB.name;
     teamBHeader.style.backgroundColor = matchState.teamB.color;
     
-    // Update the central score display
-    const scoreDisplay = document.getElementById('scoreDisplay');
-    scoreDisplay.textContent = `${matchState.teamA.goals} - ${matchState.teamB.goals}`;
+    // Update the scores in the header
+    const teamAScoreEl = document.getElementById('teamAScore');
+    const teamBScoreEl = document.getElementById('teamBScore');
+    teamAScoreEl.textContent = `${matchState.teamA.name} ${matchState.teamA.goals}`;
+    teamBScoreEl.textContent = `${matchState.teamB.name} ${matchState.teamB.goals}`;
     
     teamASubBtn.style.backgroundColor = matchState.teamA.color;
     teamBSubBtn.style.backgroundColor = matchState.teamB.color;
