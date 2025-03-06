@@ -499,3 +499,20 @@ header {
     overflow-y: auto;
     padding-right: 10px;
 }
+
+/* Goal Buttons */
+.goal-btn-a {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.goal-btn-b {
+    background-color: #4CAF50;
+    color: white;
+}
+
+/* Reset Button */
+.reset-btn {
+    background-color: #FF9800;
+    color: white;
+}
