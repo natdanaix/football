@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', function() {
             cards: [],
             substitutions: [],
             subWindows: 0,
+            goals: [],
+            score: 0
         },
         teamB: {
             name: "ทีม B",
@@ -17,6 +19,8 @@ document.addEventListener('DOMContentLoaded', function() {
             cards: [],
             substitutions: [],
             subWindows: 0,
+            goals: [],
+            score: 0
         },
         isInjuryTimeActive: false,
         totalInjurySeconds: 0,
@@ -39,41 +43,51 @@ document.addEventListener('DOMContentLoaded', function() {
     const injuryTimeEl = document.getElementById('injuryTime');
     const totalInjuryEl = document.getElementById('totalInjury');
     const startMatchBtn = document.getElementById('startMatchBtn');
+    const loadMatchBtn = document.getElementById('loadMatchBtn');
     const matchControlsEl = document.getElementById('matchControls');
     const injuryControlsEl = document.getElementById('injuryControls');
     const injuryBtn = document.getElementById('injuryBtn');
     const injuryFab = document.getElementById('injuryFab');
     const teamAHeader = document.getElementById('teamAHeader');
     const teamBHeader = document.getElementById('teamBHeader');
+    const teamAScoreEl = document.getElementById('teamAScore');
+    const teamBScoreEl = document.getElementById('teamBScore');
     const endMatchBtn = document.getElementById('endMatchBtn');
 
     // Team A buttons
     const teamAYellowBtn = document.getElementById('teamAYellowBtn');
     const teamARedBtn = document.getElementById('teamARedBtn');
     const teamASubBtn = document.getElementById('teamASubBtn');
+    const teamAGoalBtn = document.getElementById('teamAGoalBtn');
 
     // Team B buttons
     const teamBYellowBtn = document.getElementById('teamBYellowBtn');
     const teamBRedBtn = document.getElementById('teamBRedBtn');
     const teamBSubBtn = document.getElementById('teamBSubBtn');
+    const teamBGoalBtn = document.getElementById('teamBGoalBtn');
 
     // Content containers
     const teamACardsContent = document.getElementById('teamACardsContent');
     const teamASubsContent = document.getElementById('teamASubsContent');
+    const teamAGoalsContent = document.getElementById('teamAGoalsContent');
     const teamBCardsContent = document.getElementById('teamBCardsContent');
     const teamBSubsContent = document.getElementById('teamBSubsContent');
+    const teamBGoalsContent = document.getElementById('teamBGoalsContent');
 
     // Empty states
     const teamACardsEmpty = document.getElementById('teamACardsEmpty');
     const teamASubsEmpty = document.getElementById('teamASubsEmpty');
+    const teamAGoalsEmpty = document.getElementById('teamAGoalsEmpty');
     const teamBCardsEmpty = document.getElementById('teamBCardsEmpty');
     const teamBSubsEmpty = document.getElementById('teamBSubsEmpty');
+    const teamBGoalsEmpty = document.getElementById('teamBGoalsEmpty');
 
     // Tab elements
     const tabElements = document.querySelectorAll('.tab');
 
-    // Settings button
+    // Settings and Reset buttons
     const settingsBtn = document.getElementById('settingsBtn');
+    const resetBtn = document.getElementById('resetBtn');
 
     // Team Settings Modal
     const teamSettingsModal = document.getElementById('teamSettingsModal');
@@ -115,6 +129,15 @@ document.addEventListener('DOMContentLoaded', function() {
         </button>
     `;
 
+    // Goal Modal
+    const goalModal = document.getElementById('goalModal');
+    const goalModalTitle = document.getElementById('goalModalTitle');
+    const goalPlayerNumberInput = document.getElementById('goalPlayerNumberInput');
+    const saveGoalBtn = document.getElementById('saveGoalBtn');
+    const cancelGoalBtn = document.getElementById('cancelGoalBtn');
+    const closeGoalModalBtn = document.getElementById('closeGoalModalBtn');
+    const goalModalActions = document.getElementById('goalModalActions');
+
     // Injury Summary Modal
     const injurySummaryModal = document.getElementById('injurySummaryModal');
     const injurySummaryContent = document.getElementById('injurySummaryContent');
@@ -154,6 +177,11 @@ document.addEventListener('DOMContentLoaded', function() {
         additionalSubs: []
     };
 
+    let currentGoalContext = {
+        isTeamA: true,
+        goalToEdit: null
+    };
+
     // Initialize the page
     function init() {
         loadSavedMatchData();
@@ -169,6 +197,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set up all event listeners
     function setupEventListeners() {
         startMatchBtn.addEventListener('click', startMatch);
+        loadMatchBtn.addEventListener('click', loadMatchDataFromFile);
         injuryBtn.addEventListener('click', toggleInjuryTime);
         injuryFab.addEventListener('click', toggleInjuryTime);
         endMatchBtn.addEventListener('click', endMatch);
@@ -176,10 +205,12 @@ document.addEventListener('DOMContentLoaded', function() {
         teamAYellowBtn.addEventListener('click', () => showCardDialog(true, true));
         teamARedBtn.addEventListener('click', () => showCardDialog(true, false));
         teamASubBtn.addEventListener('click', () => showSubstitutionDialog(true));
+        teamAGoalBtn.addEventListener('click', () => showGoalDialog(true));
         
         teamBYellowBtn.addEventListener('click', () => showCardDialog(false, true));
         teamBRedBtn.addEventListener('click', () => showCardDialog(false, false));
         teamBSubBtn.addEventListener('click', () => showSubstitutionDialog(false));
+        teamBGoalBtn.addEventListener('click', () => showGoalDialog(false));
         
         tabElements.forEach(tab => {
             tab.addEventListener('click', () => {
@@ -192,21 +223,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (team === 'a') {
                     teamACardsContent.classList.remove('active');
                     teamASubsContent.classList.remove('active');
+                    teamAGoalsContent.classList.remove('active');
                     if (tabType === 'cards') teamACardsContent.classList.add('active');
-                    else teamASubsContent.classList.add('active');
+                    else if (tabType === 'subs') teamASubsContent.classList.add('active');
+                    else teamAGoalsContent.classList.add('active');
                 } else {
                     teamBCardsContent.classList.remove('active');
                     teamBSubsContent.classList.remove('active');
+                    teamBGoalsContent.classList.remove('active');
                     if (tabType === 'cards') teamBCardsContent.classList.add('active');
-                    else teamBSubsContent.classList.add('active');
+                    else if (tabType === 'subs') teamBSubsContent.classList.add('active');
+                    else teamBGoalsContent.classList.add('active');
                 }
             });
         });
         
-        settingsBtn.addEventListener('click', () => {
-            if (!matchState.isMatchStarted) showTeamCustomizationDialog();
-            else showResetConfirmDialog();
-        });
+        settingsBtn.addEventListener('click', showTeamCustomizationDialog);
+        resetBtn.addEventListener('click', showResetConfirmDialog);
         
         closeTeamSettingsBtn.addEventListener('click', () => teamSettingsModal.style.display = 'none');
         saveTeamSettingsBtn.addEventListener('click', saveTeamSettings);
@@ -219,6 +252,10 @@ document.addEventListener('DOMContentLoaded', function() {
         closeSubModalBtn.addEventListener('click', closeSubstitutionDialog);
         saveSubBtn.addEventListener('click', saveSubstitutionEvent);
         cancelSubBtn.addEventListener('click', closeSubstitutionDialog);
+        
+        closeGoalModalBtn.addEventListener('click', () => goalModal.style.display = 'none');
+        saveGoalBtn.addEventListener('click', saveGoalEvent);
+        cancelGoalBtn.addEventListener('click', () => goalModal.style.display = 'none');
         
         closeInjurySummaryBtn.addEventListener('click', () => injurySummaryModal.style.display = 'none');
         closeInjurySummaryConfirmBtn.addEventListener('click', () => injurySummaryModal.style.display = 'none');
@@ -263,7 +300,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Load saved match data
+    // Load saved match data from localStorage
     function loadSavedMatchData() {
         const savedData = localStorage.getItem('matchData');
         if (savedData) {
@@ -288,6 +325,38 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Load match data from file
+    function loadMatchDataFromFile() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const loadedData = JSON.parse(e.target.result);
+                        matchState = {
+                            ...matchState,
+                            ...loadedData,
+                            startTime: loadedData.startTime ? new Date(loadedData.startTime) : null,
+                            currentInjuryStartTime: loadedData.currentInjuryStartTime ? new Date(loadedData.currentInjuryStartTime) : null
+                        };
+                        updateUI();
+                        if (matchState.isMatchStarted) startTimers();
+                        saveMatchData();
+                        alert('โหลดข้อมูลการแข่งขันสำเร็จ');
+                    } catch (error) {
+                        alert('เกิดข้อผิดพลาดในการโหลดข้อมูล: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        };
+        input.click();
+    }
+
     function calculateUsedSubWindows(substitutions) {
         if (!substitutions || substitutions.length === 0) return 0;
         const windows = new Set();
@@ -310,9 +379,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateUI() {
-        teamAHeader.textContent = matchState.teamA.name;
+        teamAHeader.innerHTML = `${matchState.teamA.name} <span class="team-score" id="teamAScore">${matchState.teamA.score}</span>`;
+        teamBHeader.innerHTML = `${matchState.teamB.name} <span class="team-score" id="teamBScore">${matchState.teamB.score}</span>`;
         teamAHeader.style.backgroundColor = matchState.teamA.color;
-        teamBHeader.textContent = matchState.teamB.name;
         teamBHeader.style.backgroundColor = matchState.teamB.color;
         
         teamASubBtn.style.backgroundColor = matchState.teamA.color;
@@ -359,6 +428,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         renderTeamCards();
         renderTeamSubstitutions();
+        renderTeamGoals();
     }
 
     function updateSubstitutionButtonsState() {
@@ -490,6 +560,41 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
                 <button class="edit-btn" onclick="editSubstitutionWindow('${window.id}', ${isTeamA})">
+                    <i class="fas fa-edit"></i>
+                </button>
+            </div>
+        `;
+    }
+
+    function renderTeamGoals() {
+        const teamAGoalsHTML = matchState.teamA.goals.map(goal => createGoalHTML(goal, true)).join('');
+        if (teamAGoalsHTML) {
+            teamAGoalsEmpty.style.display = 'none';
+            teamAGoalsContent.innerHTML = teamAGoalsEmpty.outerHTML + teamAGoalsHTML;
+        } else {
+            teamAGoalsEmpty.style.display = 'flex';
+        }
+        
+        const teamBGoalsHTML = matchState.teamB.goals.map(goal => createGoalHTML(goal, false)).join('');
+        if (teamBGoalsHTML) {
+            teamBGoalsEmpty.style.display = 'none';
+            teamBGoalsContent.innerHTML = teamBGoalsEmpty.outerHTML + teamBGoalsHTML;
+        } else {
+            teamBGoalsEmpty.style.display = 'flex';
+        }
+    }
+
+    function createGoalHTML(goal, isTeamA) {
+        return `
+            <div class="event-card" data-id="${goal.id}">
+                <div class="event-icon goal-icon">
+                    <i class="fas fa-futbol"></i>
+                </div>
+                <div class="event-details">
+                    <div class="event-title">ประตู - #${goal.playerNumber}</div>
+                    <div class="event-time">เวลา: ${goal.timeStamp}</div>
+                </div>
+                <button class="edit-btn" onclick="editGoal('${goal.id}', ${isTeamA})">
                     <i class="fas fa-edit"></i>
                 </button>
             </div>
@@ -898,6 +1003,90 @@ document.addEventListener('DOMContentLoaded', function() {
         subModal.style.display = 'none';
     }
 
+    function showGoalDialog(isTeamA, goalToEdit = null) {
+        if (!matchState.isMatchStarted && !goalToEdit) {
+            alert('โปรดเริ่มการแข่งขันก่อน');
+            return;
+        }
+        
+        currentGoalContext = { isTeamA, goalToEdit };
+        const teamName = isTeamA ? matchState.teamA.name : matchState.teamB.name;
+        goalModalTitle.textContent = `${goalToEdit ? 'แก้ไข ' : ''}ประตู - ${teamName}`;
+        goalPlayerNumberInput.value = goalToEdit ? goalToEdit.playerNumber : '';
+        
+        if (goalToEdit) {
+            let deleteBtn = document.getElementById('deleteGoalBtn');
+            if (!deleteBtn) {
+                deleteBtn = document.createElement('button');
+                deleteBtn.id = 'deleteGoalBtn';
+                deleteBtn.className = 'modal-btn delete-btn';
+                deleteBtn.textContent = 'ยกเลิกประตู';
+                deleteBtn.addEventListener('click', deleteGoalEvent);
+                goalModalActions.insertBefore(deleteBtn, cancelGoalBtn);
+            }
+        } else {
+            const deleteBtn = document.getElementById('deleteGoalBtn');
+            if (deleteBtn) deleteBtn.remove();
+        }
+        
+        saveGoalBtn.style.backgroundColor = '#4CAF50';
+        saveGoalBtn.style.color = 'white';
+        goalModal.style.display = 'flex';
+        goalPlayerNumberInput.focus();
+    }
+
+    function saveGoalEvent() {
+        const playerNumber = goalPlayerNumberInput.value.trim();
+        if (!playerNumber) {
+            alert('กรุณาระบุหมายเลขผู้เล่น');
+            return;
+        }
+        
+        const { isTeamA, goalToEdit } = currentGoalContext;
+        const currentTimeStamp = goalToEdit ? goalToEdit.timeStamp : 
+            (matchState.isInjuryTimeActive ? 
+                `${matchState.elapsedTime} ${matchState.currentInjuryTimeDisplay}` : 
+                matchState.elapsedTime);
+        
+        if (goalToEdit) {
+            goalToEdit.playerNumber = playerNumber;
+        } else {
+            const newGoal = {
+                id: Date.now().toString(),
+                timeStamp: currentTimeStamp,
+                playerNumber
+            };
+            if (isTeamA) {
+                matchState.teamA.goals.push(newGoal);
+                matchState.teamA.score++;
+            } else {
+                matchState.teamB.goals.push(newGoal);
+                matchState.teamB.score++;
+            }
+        }
+        
+        renderTeamGoals();
+        updateUI();
+        saveMatchData();
+        goalModal.style.display = 'none';
+    }
+
+    function deleteGoalEvent() {
+        const { isTeamA, goalToEdit } = currentGoalContext;
+        if (!goalToEdit) return;
+        if (isTeamA) {
+            matchState.teamA.goals = matchState.teamA.goals.filter(goal => goal.id !== goalToEdit.id);
+            matchState.teamA.score = Math.max(0, matchState.teamA.score - 1);
+        } else {
+            matchState.teamB.goals = matchState.teamB.goals.filter(goal => goal.id !== goalToEdit.id);
+            matchState.teamB.score = Math.max(0, matchState.teamB.score - 1);
+        }
+        renderTeamGoals();
+        updateUI();
+        saveMatchData();
+        goalModal.style.display = 'none';
+    }
+
     function showResetConfirmDialog() {
         resetConfirmModal.style.display = 'flex';
     }
@@ -914,14 +1103,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 color: "#1976D2",
                 cards: [],
                 substitutions: [],
-                subWindows: 0
+                subWindows: 0,
+                goals: [],
+                score: 0
             },
             teamB: {
                 name: "ทีม B",
                 color: "#D32F2F",
                 cards: [],
                 substitutions: [],
-                subWindows: 0
+                subWindows: 0,
+                goals: [],
+                score: 0
             },
             isInjuryTimeActive: false,
             totalInjurySeconds: 0,
@@ -964,7 +1157,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let summaryHTML = `
             <div style="margin-bottom: 16px;">
-                <h3 style="margin-bottom: 8px;">ระยะเวลาการแข่งขัน</h3>
+                <h3 style="margin-bottom: 8px;">ผลสกอร์: ${teamA.name} ${teamA.score} - ${teamB.score} ${teamB.name}</h3>
                 <p>เวลาแข่งขันปกติ: ${totalMatchTime}</p>
                 <p>เวลาทดเจ็บรวม: ${totalInjuryTime}</p>
             </div>
@@ -973,6 +1166,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <p>ใบเหลือง: ${teamAYellowCards} ใบ</p>
                 <p>ใบแดง: ${teamARedCards} ใบ</p>
                 <p>จำนวนครั้งเปลี่ยนตัว: ${teamASubWindows.length} ครั้ง (${teamA.substitutions.length} คน)</p>
+                <p>ประตู: ${teamA.score} ประตู</p>
                 ${teamA.cards.length > 0 ? `
                     <div style="margin-top: 8px;">
                         <p>รายละเอียดใบเตือน:</p>
@@ -992,12 +1186,21 @@ document.addEventListener('DOMContentLoaded', function() {
                         `).join('')}
                     </div>
                 ` : ''}
+                ${teamA.goals.length > 0 ? `
+                    <div style="margin-top: 8px;">
+                        <p>รายละเอียดประตู:</p>
+                        ${teamA.goals.map(goal => `
+                            <p style="margin-left: 16px;">- #${goal.playerNumber} (${goal.timeStamp})</p>
+                        `).join('')}
+                    </div>
+                ` : ''}
             </div>
             <div>
                 <h3 style="margin-bottom: 8px;">${teamB.name}</h3>
                 <p>ใบเหลือง: ${teamBYellowCards} ใบ</p>
                 <p>ใบแดง: ${teamBRedCards} ใบ</p>
                 <p>จำนวนครั้งเปลี่ยนตัว: ${teamBSubWindows.length} ครั้ง (${teamB.substitutions.length} คน)</p>
+                <p>ประตู: ${teamB.score} ประตู</p>
                 ${teamB.cards.length > 0 ? `
                     <div style="margin-top: 8px;">
                         <p>รายละเอียดใบเตือน:</p>
@@ -1017,6 +1220,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         `).join('')}
                     </div>
                 ` : ''}
+                ${teamB.goals.length > 0 ? `
+                    <div style="margin-top: 8px;">
+                        <p>รายละเอียดประตู:</p>
+                        ${teamB.goals.map(goal => `
+                            <p style="margin-left: 16px;">- #${goal.playerNumber} (${goal.timeStamp})</p>
+                        `).join('')}
+                    </div>
+                ` : ''}
             </div>
         `;
 
@@ -1032,7 +1243,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const doc = new jsPDF();
 
         // Add THSarabunNew font
-        doc.addFileToVFS('THSarabunNew.ttf', thsarabunnewFont); // Provided by thsarabunnew.js
+        doc.addFileToVFS('THSarabunNew.ttf', thsarabunnewFont);
         doc.addFont('THSarabunNew.ttf', 'THSarabunNew', 'normal');
         doc.setFont('THSarabunNew');
 
@@ -1052,9 +1263,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         let yPos = 20;
         
-        // Match Duration
+        // Match Summary
         doc.setFontSize(14);
-        doc.text("ระยะเวลาการแข่งขัน", 10, yPos);
+        doc.text(`ผลสกอร์: ${teamA.name} ${teamA.score} - ${teamB.score} ${teamB.name}`, 10, yPos);
         yPos += 10;
         doc.setFontSize(12);
         doc.text(`เวลาแข่งขันปกติ: ${matchState.elapsedTime}`, 10, yPos);
@@ -1072,6 +1283,8 @@ document.addEventListener('DOMContentLoaded', function() {
         doc.text(`ใบแดง: ${teamARedCards} ใบ`, 10, yPos);
         yPos += 7;
         doc.text(`จำนวนครั้งเปลี่ยนตัว: ${teamASubWindows.length} ครั้ง (${teamA.substitutions.length} คน)`, 10, yPos);
+        yPos += 7;
+        doc.text(`ประตู: ${teamA.score} ประตู`, 10, yPos);
         yPos += 7;
         
         if (teamA.cards.length > 0) {
@@ -1106,6 +1319,20 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
+        if (teamA.goals.length > 0) {
+            yPos += 5;
+            doc.text("รายละเอียดประตู:", 10, yPos);
+            yPos += 7;
+            teamA.goals.forEach(goal => {
+                doc.text(`- #${goal.playerNumber} (${goal.timeStamp})`, 15, yPos);
+                yPos += 7;
+                if (yPos > 280) {
+                    doc.addPage();
+                    yPos = 10;
+                }
+            });
+        }
+        
         yPos += 10;
         
         // Team B Summary
@@ -1118,6 +1345,8 @@ document.addEventListener('DOMContentLoaded', function() {
         doc.text(`ใบแดง: ${teamBRedCards} ใบ`, 10, yPos);
         yPos += 7;
         doc.text(`จำนวนครั้งเปลี่ยนตัว: ${teamBSubWindows.length} ครั้ง (${teamB.substitutions.length} คน)`, 10, yPos);
+        yPos += 7;
+        doc.text(`ประตู: ${teamB.score} ประตู`, 10, yPos);
         yPos += 7;
         
         if (teamB.cards.length > 0) {
@@ -1152,6 +1381,20 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
+        if (teamB.goals.length > 0) {
+            yPos += 5;
+            doc.text("รายละเอียดประตู:", 10, yPos);
+            yPos += 7;
+            teamB.goals.forEach(goal => {
+                doc.text(`- #${goal.playerNumber} (${goal.timeStamp})`, 15, yPos);
+                yPos += 7;
+                if (yPos > 280) {
+                    doc.addPage();
+                    yPos = 10;
+                }
+            });
+        }
+        
         // Save the PDF
         doc.save(`Match_Summary_${new Date().toISOString().slice(0,10)}.pdf`);
     }
@@ -1165,6 +1408,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     window.editSubstitutionWindow = function(windowId, isTeamA) {
         showSubstitutionDialog(isTeamA, windowId);
+    };
+
+    window.editGoal = function(goalId, isTeamA) {
+        const goal = isTeamA 
+            ? matchState.teamA.goals.find(g => g.id === goalId)
+            : matchState.teamB.goals.find(g => g.id === goalId);
+        if (goal) showGoalDialog(isTeamA, goal);
     };
 
     init();
