@@ -114,6 +114,7 @@
             padding: 10px;
             background-color: white;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            gap: 10px; /* Added gap between buttons */
         }
 
         .control-btn {
@@ -515,6 +516,9 @@
             <button class="control-btn injury-btn" id="injuryBtn">
                 <i class="fas fa-stopwatch"></i> ทดเวลา
             </button>
+            <button class="control-btn end-btn" id="endMatchBtn" style="background-color: #757575; color: white;">
+                <i class="fas fa-stop"></i> จบการแข่งขัน
+            </button>
         </div>
         
         <div class="teams-container">
@@ -692,6 +696,24 @@
             </div>
         </div>
     </div>
+
+    <!-- Match Summary Modal -->
+    <div class="modal" id="matchSummaryModal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <div class="modal-title">สรุปผลการแข่งขัน</div>
+                <button class="close-btn" id="closeMatchSummaryBtn">&times;</button>
+            </div>
+            <div id="matchSummaryContent">
+                <!-- Match summary will be added here -->
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn confirm-btn" id="closeMatchSummaryConfirmBtn">ตกลง</button>
+            </div>
+        </div>
+    </div>
+
     <script src="football-tracker.js"></script>
+    <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'91be451bb82e1361',t:'MTc0MTIyNjUzNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
 </html>
