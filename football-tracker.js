@@ -1027,132 +1027,115 @@ document.addEventListener('DOMContentLoaded', function() {
         saveMatchData();
     }
 
-    function saveSummaryAsPdf() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        
-        // Set font for Thai language support (Note: Requires additional font setup)
-        // doc.setFont("THSarabunNew", "normal"); // Uncomment and setup font if available
-        
-        // Add title
-        doc.setFontSize(16);
-        doc.text("สรุปผลการแข่งขัน", 105, 10, { align: "center" });
-        
-        // Prepare content
-        const teamA = matchState.teamA;
-        const teamB = matchState.teamB;
-        const teamAYellowCards = teamA.cards.filter(card => card.isYellow).length;
-        const teamARedCards = teamA.cards.filter(card => !card.isYellow).length;
-        const teamBYellowCards = teamB.cards.filter(card => card.isYellow).length;
-        const teamBRedCards = teamB.cards.filter(card => !card.isYellow).length;
-        const teamASubWindows = groupSubstitutionsByWindow(teamA.substitutions);
-        const teamBSubWindows = groupSubstitutionsByWindow(teamB.substitutions);
-        
-        let yPos = 20;
-        
-        // Match Duration
-        doc.setFontSize(14);
-        doc.text("ระยะเวลาการแข่งขัน", 10, yPos);
-        yPos += 10;
-        doc.setFontSize(12);
-        doc.text(`เวลาแข่งขันปกติ: ${matchState.elapsedTime}`, 10, yPos);
+   function saveSummaryAsPdf() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // Title
+    doc.setFontSize(16);
+    doc.text("Match Summary", 105, 10, { align: "center" });
+    
+    // Match Data
+    const teamA = matchState.teamA;
+    const teamB = matchState.teamB;
+    const teamAYellowCards = teamA.cards.filter(card => card.isYellow).length;
+    const teamARedCards = teamA.cards.filter(card => !card.isYellow).length;
+    const teamBYellowCards = teamB.cards.filter(card => card.isYellow).length;
+    const teamBRedCards = teamB.cards.filter(card => !card.isYellow).length;
+    const teamASubWindows = groupSubstitutionsByWindow(teamA.substitutions);
+    const teamBSubWindows = groupSubstitutionsByWindow(teamB.substitutions);
+    
+    let yPos = 20;
+    
+    // Match Duration
+    doc.setFontSize(14);
+    doc.text("Match Duration", 10, yPos);
+    yPos += 10;
+    doc.setFontSize(12);
+    doc.text(`Normal Time: ${matchState.elapsedTime}`, 10, yPos);
+    yPos += 7;
+    doc.text(`Total Injury Time: ${getTotalInjuryTimeDisplay()}`, 10, yPos);
+    yPos += 15;
+    
+    // Team A Summary
+    doc.setFontSize(14);
+    doc.text(teamA.name, 10, yPos);
+    yPos += 10;
+    doc.setFontSize(12);
+    doc.text(`Yellow Cards: ${teamAYellowCards}`, 10, yPos);
+    yPos += 7;
+    doc.text(`Red Cards: ${teamARedCards}`, 10, yPos);
+    yPos += 7;
+    doc.text(`Substitution Windows: ${teamASubWindows.length} (${teamA.substitutions.length} players)`, 10, yPos);
+    yPos += 10;
+
+    if (teamA.cards.length > 0) {
+        doc.text("Card Details:", 10, yPos);
         yPos += 7;
-        doc.text(`เวลาทดเจ็บรวม: ${getTotalInjuryTimeDisplay()}`, 10, yPos);
-        yPos += 10;
-        
-        // Team A Summary
-        doc.setFontSize(14);
-        doc.text(teamA.name, 10, yPos);
-        yPos += 10;
-        doc.setFontSize(12);
-        doc.text(`ใบเหลือง: ${teamAYellowCards} ใบ`, 10, yPos);
-        yPos += 7;
-        doc.text(`ใบแดง: ${teamARedCards} ใบ`, 10, yPos);
-        yPos += 7;
-        doc.text(`จำนวนครั้งเปลี่ยนตัว: ${teamASubWindows.length} ครั้ง (${teamA.substitutions.length} คน)`, 10, yPos);
-        yPos += 7;
-        
-        if (teamA.cards.length > 0) {
-            yPos += 5;
-            doc.text("รายละเอียดใบเตือน:", 10, yPos);
+        teamA.cards.forEach(card => {
+            doc.text(`- ${card.isYellow ? 'Yellow' : 'Red'} Card #${card.playerNumber} at ${card.timeStamp}`, 15, yPos);
             yPos += 7;
-            teamA.cards.forEach(card => {
-                doc.text(`- ${card.isYellow ? 'ใบเหลือง' : 'ใบแดง'} #${card.playerNumber} (${card.timeStamp})`, 15, yPos);
-                yPos += 7;
-                if (yPos > 280) {
-                    doc.addPage();
-                    yPos = 10;
-                }
-            });
-        }
-        
-        if (teamASubWindows.length > 0) {
-            yPos += 5;
-            doc.text("รายละเอียดการเปลี่ยนตัว:", 10, yPos);
-            yPos += 7;
-            teamASubWindows.forEach((window, index) => {
-                doc.text(`- ครั้งที่ ${index + 1} (${window.timeStamp}):`, 15, yPos);
-                yPos += 7;
-                window.substitutions.forEach(sub => {
-                    doc.text(`  #${sub.playerInNumber} เข้า, #${sub.playerOutNumber} ออก`, 20, yPos);
-                    yPos += 7;
-                    if (yPos > 280) {
-                        doc.addPage();
-                        yPos = 10;
-                    }
-                });
-            });
-        }
-        
-        yPos += 10;
-        
-        // Team B Summary
-        doc.setFontSize(14);
-        doc.text(teamB.name, 10, yPos);
-        yPos += 10;
-        doc.setFontSize(12);
-        doc.text(`ใบเหลือง: ${teamBYellowCards} ใบ`, 10, yPos);
-        yPos += 7;
-        doc.text(`ใบแดง: ${teamBRedCards} ใบ`, 10, yPos);
-        yPos += 7;
-        doc.text(`จำนวนครั้งเปลี่ยนตัว: ${teamBSubWindows.length} ครั้ง (${teamB.substitutions.length} คน)`, 10, yPos);
-        yPos += 7;
-        
-        if (teamB.cards.length > 0) {
-            yPos += 5;
-            doc.text("รายละเอียดใบเตือน:", 10, yPos);
-            yPos += 7;
-            teamB.cards.forEach(card => {
-                doc.text(`- ${card.isYellow ? 'ใบเหลือง' : 'ใบแดง'} #${card.playerNumber} (${card.timeStamp})`, 15, yPos);
-                yPos += 7;
-                if (yPos > 280) {
-                    doc.addPage();
-                    yPos = 10;
-                }
-            });
-        }
-        
-        if (teamBSubWindows.length > 0) {
-            yPos += 5;
-            doc.text("รายละเอียดการเปลี่ยนตัว:", 10, yPos);
-            yPos += 7;
-            teamBSubWindows.forEach((window, index) => {
-                doc.text(`- ครั้งที่ ${index + 1} (${window.timeStamp}):`, 15, yPos);
-                yPos += 7;
-                window.substitutions.forEach(sub => {
-                    doc.text(`  #${sub.playerInNumber} เข้า, #${sub.playerOutNumber} ออก`, 20, yPos);
-                    yPos += 7;
-                    if (yPos > 280) {
-                        doc.addPage();
-                        yPos = 10;
-                    }
-                });
-            });
-        }
-        
-        // Save the PDF
-        doc.save(`Match_Summary_${new Date().toISOString().slice(0,10)}.pdf`);
+            if (yPos > 280) { doc.addPage(); yPos = 10; }
+        });
     }
+
+    if (teamASubWindows.length > 0) {
+        yPos += 5;
+        doc.text("Substitution Details:", 10, yPos);
+        yPos += 7;
+        teamASubWindows.forEach((window, index) => {
+            doc.text(`- Window ${index + 1} at ${window.timeStamp}:`, 15, yPos);
+            yPos += 7;
+            window.substitutions.forEach(sub => {
+                doc.text(`  #${sub.playerInNumber} In, #${sub.playerOutNumber} Out`, 20, yPos);
+                yPos += 7;
+                if (yPos > 280) { doc.addPage(); yPos = 10; }
+            });
+        });
+    }
+    
+    yPos += 15;
+    
+    // Team B Summary
+    doc.setFontSize(14);
+    doc.text(teamB.name, 10, yPos);
+    yPos += 10;
+    doc.setFontSize(12);
+    doc.text(`Yellow Cards: ${teamBYellowCards}`, 10, yPos);
+    yPos += 7;
+    doc.text(`Red Cards: ${teamBRedCards}`, 10, yPos);
+    yPos += 7;
+    doc.text(`Substitution Windows: ${teamBSubWindows.length} (${teamB.substitutions.length} players)`, 10, yPos);
+    yPos += 10;
+
+    if (teamB.cards.length > 0) {
+        doc.text("Card Details:", 10, yPos);
+        yPos += 7;
+        teamB.cards.forEach(card => {
+            doc.text(`- ${card.isYellow ? 'Yellow' : 'Red'} Card #${card.playerNumber} at ${card.timeStamp}`, 15, yPos);
+            yPos += 7;
+            if (yPos > 280) { doc.addPage(); yPos = 10; }
+        });
+    }
+
+    if (teamBSubWindows.length > 0) {
+        yPos += 5;
+        doc.text("Substitution Details:", 10, yPos);
+        yPos += 7;
+        teamBSubWindows.forEach((window, index) => {
+            doc.text(`- Window ${index + 1} at ${window.timeStamp}:`, 15, yPos);
+            yPos += 7;
+            window.substitutions.forEach(sub => {
+                doc.text(`  #${sub.playerInNumber} In, #${sub.playerOutNumber} Out`, 20, yPos);
+                yPos += 7;
+                if (yPos > 280) { doc.addPage(); yPos = 10; }
+            });
+        });
+    }
+    
+    // Save PDF
+    doc.save(`Match_Summary_${new Date().toISOString().slice(0,10)}.pdf`);
+}
 
     window.editCard = function(cardId, isTeamA) {
         const card = isTeamA 
