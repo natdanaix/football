@@ -57,12 +57,7 @@ header {
     font-weight: bold;
 }
 
-.header-buttons {
-    display: flex;
-    gap: 10px;
-}
-
-.settings-btn, .reset-btn {
+.settings-btn {
     background: none;
     border: none;
     color: white;
@@ -170,13 +165,6 @@ header {
     border-radius: 6px;
     font-weight: bold;
     color: white;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.team-score {
-    font-size: 1.5rem;
 }
 
 .team-a .team-header {
@@ -221,11 +209,6 @@ header {
 
 .sub-btn-b {
     background-color: var(--team-b-color);
-    color: white;
-}
-
-.goal-btn-a, .goal-btn-b {
-    background-color: #4CAF50;
     color: white;
 }
 
@@ -307,10 +290,6 @@ header {
 
 .sub-icon-b {
     color: var(--team-b-color);
-}
-
-.goal-icon {
-    color: #4CAF50;
 }
 
 .event-details {
@@ -477,12 +456,6 @@ header {
     background-color: #D32F2F;
 }
 
-.no-data {
-    padding: 20px;
-    text-align: center;
-    color: var(--text-secondary);
-}
-
 .empty-state {
     display: flex;
     flex-direction: column;
@@ -506,7 +479,6 @@ header {
     padding-right: 10px;
 }
 
-/* Additional styles for substitution modal */
 .substitution-fields {
     margin-top: 15px;
     border-top: 1px solid var(--border-color);
@@ -534,7 +506,6 @@ header {
     margin-top: 10px;
 }
 
-/* Disabled button state */
 .action-btn.disabled {
     opacity: 0.6;
     cursor: not-allowed;
