@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
             cards: [],
             substitutions: [],
             subWindows: 0,
+            goals: 0 // Added goals property
         },
         teamB: {
             name: "Team B",
@@ -17,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
             cards: [],
             substitutions: [],
             subWindows: 0,
+            goals: 0 // Added goals property
         },
         isInjuryTimeActive: false,
         totalInjurySeconds: 0,
@@ -51,11 +53,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const teamAYellowBtn = document.getElementById('teamAYellowBtn');
     const teamARedBtn = document.getElementById('teamARedBtn');
     const teamASubBtn = document.getElementById('teamASubBtn');
+    const teamAGoalBtn = document.getElementById('teamAGoalBtn'); // Added Goal button
 
     // Team B buttons
     const teamBYellowBtn = document.getElementById('teamBYellowBtn');
     const teamBRedBtn = document.getElementById('teamBRedBtn');
     const teamBSubBtn = document.getElementById('teamBSubBtn');
+    const teamBGoalBtn = document.getElementById('teamBGoalBtn'); // Added Goal button
 
     // Content containers
     const teamACardsContent = document.getElementById('teamACardsContent');
@@ -85,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const saveTeamSettingsBtn = document.getElementById('saveTeamSettingsBtn');
     const cancelTeamSettingsBtn = document.getElementById('cancelTeamSettingsBtn');
 
-    // Card Modal
+    // Card Modal (reused for goals)
     const cardModal = document.getElementById('cardModal');
     const cardModalTitle = document.getElementById('cardModalTitle');
     const playerNumberInput = document.getElementById('playerNumberInput');
@@ -145,6 +149,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentCardContext = {
         isTeamA: true,
         isYellow: true,
+        isGoal: false, // Added for goal tracking
         cardToEdit: null
     };
 
@@ -173,13 +178,15 @@ document.addEventListener('DOMContentLoaded', function() {
         injuryFab.addEventListener('click', toggleInjuryTime);
         endMatchBtn.addEventListener('click', endMatch);
 
-        teamAYellowBtn.addEventListener('click', () => showCardDialog(true, true));
-        teamARedBtn.addEventListener('click', () => showCardDialog(true, false));
+        teamAYellowBtn.addEventListener('click', () => showCardDialog(true, true, false));
+        teamARedBtn.addEventListener('click', () => showCardDialog(true, false, false));
         teamASubBtn.addEventListener('click', () => showSubstitutionDialog(true));
+        teamAGoalBtn.addEventListener('click', () => showCardDialog(true, false, true)); // Goal button for Team A
         
-        teamBYellowBtn.addEventListener('click', () => showCardDialog(false, true));
-        teamBRedBtn.addEventListener('click', () => showCardDialog(false, false));
+        teamBYellowBtn.addEventListener('click', () => showCardDialog(false, true, false));
+        teamBRedBtn.addEventListener('click', () => showCardDialog(false, false, false));
         teamBSubBtn.addEventListener('click', () => showSubstitutionDialog(false));
+        teamBGoalBtn.addEventListener('click', () => showCardDialog(false, false, true)); // Goal button for Team B
         
         tabElements.forEach(tab => {
             tab.addEventListener('click', () => {
@@ -272,7 +279,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 ...matchState,
                 ...parsedData,
                 startTime: parsedData.startTime ? new Date(parsedData.startTime) : null,
-                currentInjuryStartTime: parsedData.currentInjuryStartTime ? new Date(parsedData.currentInjuryStartTime) : null
+                currentInjuryStartTime: parsedData.currentInjuryStartTime ? new Date(parsedData.currentInjuryStartTime) : null,
+                teamA: { ...matchState.teamA, ...parsedData.teamA, goals: parsedData.teamA.goals || 0 },
+                teamB: { ...matchState.teamB, ...parsedData.teamB, goals: parsedData.teamB.goals || 0 }
             };
             if (matchState.teamA.subWindows === undefined) {
                 matchState.teamA.subWindows = calculateUsedSubWindows(matchState.teamA.substitutions);
@@ -310,7 +319,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateUI() {
-        teamAHeader.textContent = matchState.teamA.name;
+        teamAHeader.innerHTML = `${matchState.teamA.name} <span class="team-score">${matchState.teamA.goals} - ${matchState.teamB.goals}</span>`;
         teamAHeader.style.backgroundColor = matchState.teamA.color;
         teamBHeader.textContent = matchState.teamB.name;
         teamBHeader.style.backgroundColor = matchState.teamB.color;
@@ -404,13 +413,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function createCardHTML(card, isTeamA) {
+        const eventType = card.isYellow ? 'Yellow Card' : (card.isGoal ? 'Goal' : 'Red Card');
         return `
             <div class="event-card" data-id="${card.id}">
-                <div class="event-icon ${card.isYellow ? 'yellow-icon' : 'red-icon'}">
-                    <i class="fas fa-square"></i>
+                <div class="event-icon ${card.isYellow ? 'yellow-icon' : (card.isGoal ? 'goal-icon' : 'red-icon')}">
+                    <i class="fas fa-${card.isGoal ? 'futbol' : 'square'}"></i>
                 </div>
                 <div class="event-details">
-                    <div class="event-title">${card.isYellow ? 'Yellow Card' : 'Red Card'} - #${card.playerNumber}</div>
+                    <div class="event-title">${eventType} - #${card.playerNumber}</div>
                     <div class="event-time">Time: ${card.timeStamp}</div>
                 </div>
                 <button class="edit-btn" onclick="editCard('${card.id}', ${isTeamA})">
@@ -633,16 +643,16 @@ document.addEventListener('DOMContentLoaded', function() {
         teamSettingsModal.style.display = 'none';
     }
 
-    function showCardDialog(isTeamA, isYellow, cardToEdit = null) {
+    function showCardDialog(isTeamA, isYellow, isGoal, cardToEdit = null) {
         if (!matchState.isMatchStarted && !cardToEdit) {
             alert('Please start the match first');
             return;
         }
         
-        currentCardContext = { isTeamA, isYellow, cardToEdit };
+        currentCardContext = { isTeamA, isYellow, isGoal, cardToEdit };
         const teamName = isTeamA ? matchState.teamA.name : matchState.teamB.name;
-        const cardType = isYellow ? 'Yellow Card' : 'Red Card';
-        cardModalTitle.textContent = `${cardToEdit ? 'Edit ' : ''}${cardType} - ${teamName}`;
+        const eventType = isGoal ? 'Goal' : (isYellow ? 'Yellow Card' : 'Red Card');
+        cardModalTitle.textContent = `${cardToEdit ? 'Edit ' : ''}${eventType} - ${teamName}`;
         playerNumberInput.value = cardToEdit ? cardToEdit.playerNumber : '';
         
         if (cardToEdit) {
@@ -660,7 +670,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (deleteBtn) deleteBtn.remove();
         }
         
-        saveCardBtn.style.backgroundColor = isYellow ? '#FFC107' : '#D32F2F';
+        saveCardBtn.style.backgroundColor = isGoal ? '#4CAF50' : (isYellow ? '#FFC107' : '#D32F2F');
         saveCardBtn.style.color = isYellow ? 'black' : 'white';
         cardModal.style.display = 'flex';
         playerNumberInput.focus();
@@ -673,7 +683,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        const { isTeamA, isYellow, cardToEdit } = currentCardContext;
+        const { isTeamA, isYellow, isGoal, cardToEdit } = currentCardContext;
         const currentTimeStamp = cardToEdit ? cardToEdit.timeStamp : 
             (matchState.isInjuryTimeActive ? 
                 `${matchState.elapsedTime} ${matchState.currentInjuryTimeDisplay}` : 
@@ -681,18 +691,32 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (cardToEdit) {
             cardToEdit.playerNumber = playerNumber;
+            if (cardToEdit.isGoal && !isGoal) {
+                if (isTeamA) matchState.teamA.goals--;
+                else matchState.teamB.goals--;
+            } else if (!cardToEdit.isGoal && isGoal) {
+                if (isTeamA) matchState.teamA.goals++;
+                else matchState.teamB.goals++;
+            }
         } else {
             const newCard = {
                 id: Date.now().toString(),
                 isYellow,
+                isGoal,
                 timeStamp: currentTimeStamp,
                 playerNumber
             };
-            if (isTeamA) matchState.teamA.cards.push(newCard);
-            else matchState.teamB.cards.push(newCard);
+            if (isTeamA) {
+                matchState.teamA.cards.push(newCard);
+                if (isGoal) matchState.teamA.goals++;
+            } else {
+                matchState.teamB.cards.push(newCard);
+                if (isGoal) matchState.teamB.goals++;
+            }
         }
         
         renderTeamCards();
+        updateUI();
         saveMatchData();
         cardModal.style.display = 'none';
     }
@@ -702,10 +726,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!cardToEdit) return;
         if (isTeamA) {
             matchState.teamA.cards = matchState.teamA.cards.filter(card => card.id !== cardToEdit.id);
+            if (cardToEdit.isGoal) matchState.teamA.goals--;
         } else {
             matchState.teamB.cards = matchState.teamB.cards.filter(card => card.id !== cardToEdit.id);
+            if (cardToEdit.isGoal) matchState.teamB.goals--;
         }
         renderTeamCards();
+        updateUI();
         saveMatchData();
         cardModal.style.display = 'none';
     }
@@ -914,14 +941,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 color: "#1976D2",
                 cards: [],
                 substitutions: [],
-                subWindows: 0
+                subWindows: 0,
+                goals: 0
             },
             teamB: {
                 name: "Team B",
                 color: "#D32F2F",
                 cards: [],
                 substitutions: [],
-                subWindows: 0
+                subWindows: 0,
+                goals: 0
             },
             isInjuryTimeActive: false,
             totalInjurySeconds: 0,
@@ -954,9 +983,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const teamA = matchState.teamA;
         const teamB = matchState.teamB;
         const teamAYellowCards = teamA.cards.filter(card => card.isYellow).length;
-        const teamARedCards = teamA.cards.filter(card => !card.isYellow).length;
+        const teamARedCards = teamA.cards.filter(card => !card.isYellow && !card.isGoal).length;
+        const teamAGoals = teamA.goals;
         const teamBYellowCards = teamB.cards.filter(card => card.isYellow).length;
-        const teamBRedCards = teamB.cards.filter(card => !card.isYellow).length;
+        const teamBRedCards = teamB.cards.filter(card => !card.isYellow && !card.isGoal).length;
+        const teamBGoals = teamB.goals;
         const teamASubWindows = groupSubstitutionsByWindow(teamA.substitutions);
         const teamBSubWindows = groupSubstitutionsByWindow(teamB.substitutions);
         const totalMatchTime = matchState.elapsedTime;
@@ -970,14 +1001,15 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
             <div style="margin-bottom: 16px;">
                 <h3 style="margin-bottom: 8px;">${teamA.name}</h3>
+                <p>Goals: ${teamAGoals}</p>
                 <p>Yellow Cards: ${teamAYellowCards}</p>
                 <p>Red Cards: ${teamARedCards}</p>
                 <p>Substitution Windows: ${teamASubWindows.length} (${teamA.substitutions.length} Players)</p>
                 ${teamA.cards.length > 0 ? `
                     <div style="margin-top: 8px;">
-                        <p>Card Details:</p>
+                        <p>Event Details:</p>
                         ${teamA.cards.map(card => `
-                            <p style="margin-left: 16px;">- ${card.isYellow ? 'Yellow Card' : 'Red Card'} #${card.playerNumber} (${card.timeStamp})</p>
+                            <p style="margin-left: 16px;">- ${card.isGoal ? 'Goal' : (card.isYellow ? 'Yellow Card' : 'Red Card')} #${card.playerNumber} (${card.timeStamp})</p>
                         `).join('')}
                     </div>
                 ` : ''}
@@ -995,14 +1027,15 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
             <div>
                 <h3 style="margin-bottom: 8px;">${teamB.name}</h3>
+                <p>Goals: ${teamBGoals}</p>
                 <p>Yellow Cards: ${teamBYellowCards}</p>
                 <p>Red Cards: ${teamBRedCards}</p>
                 <p>Substitution Windows: ${teamBSubWindows.length} (${teamB.substitutions.length} Players)</p>
                 ${teamB.cards.length > 0 ? `
                     <div style="margin-top: 8px;">
-                        <p>Card Details:</p>
+                        <p>Event Details:</p>
                         ${teamB.cards.map(card => `
-                            <p style="margin-left: 16px;">- ${card.isYellow ? 'Yellow Card' : 'Red Card'} #${card.playerNumber} (${card.timeStamp})</p>
+                            <p style="margin-left: 16px;">- ${card.isGoal ? 'Goal' : (card.isYellow ? 'Yellow Card' : 'Red Card')} #${card.playerNumber} (${card.timeStamp})</p>
                         `).join('')}
                     </div>
                 ` : ''}
@@ -1031,23 +1064,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         
-        // Add title
         doc.setFontSize(16);
         doc.text("Match Summary", 105, 10, { align: "center" });
         
-        // Prepare content
         const teamA = matchState.teamA;
         const teamB = matchState.teamB;
         const teamAYellowCards = teamA.cards.filter(card => card.isYellow).length;
-        const teamARedCards = teamA.cards.filter(card => !card.isYellow).length;
+        const teamARedCards = teamA.cards.filter(card => !card.isYellow && !card.isGoal).length;
+        const teamAGoals = teamA.goals;
         const teamBYellowCards = teamB.cards.filter(card => card.isYellow).length;
-        const teamBRedCards = teamB.cards.filter(card => !card.isYellow).length;
+        const teamBRedCards = teamB.cards.filter(card => !card.isYellow && !card.isGoal).length;
+        const teamBGoals = teamB.goals;
         const teamASubWindows = groupSubstitutionsByWindow(teamA.substitutions);
         const teamBSubWindows = groupSubstitutionsByWindow(teamB.substitutions);
         
         let yPos = 20;
         
-        // Match Duration
         doc.setFontSize(14);
         doc.text("Match Duration", 10, yPos);
         yPos += 10;
@@ -1057,11 +1089,12 @@ document.addEventListener('DOMContentLoaded', function() {
         doc.text(`Total Injury Time: ${getTotalInjuryTimeDisplay()}`, 10, yPos);
         yPos += 10;
         
-        // Team A Summary
         doc.setFontSize(14);
         doc.text(teamA.name, 10, yPos);
         yPos += 10;
         doc.setFontSize(12);
+        doc.text(`Goals: ${teamAGoals}`, 10, yPos);
+        yPos += 7;
         doc.text(`Yellow Cards: ${teamAYellowCards}`, 10, yPos);
         yPos += 7;
         doc.text(`Red Cards: ${teamARedCards}`, 10, yPos);
@@ -1071,10 +1104,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (teamA.cards.length > 0) {
             yPos += 5;
-            doc.text("Card Details:", 10, yPos);
+            doc.text("Event Details:", 10, yPos);
             yPos += 7;
             teamA.cards.forEach(card => {
-                doc.text(`- ${card.isYellow ? 'Yellow Card' : 'Red Card'} #${card.playerNumber} (${card.timeStamp})`, 15, yPos);
+                doc.text(`- ${card.isGoal ? 'Goal' : (card.isYellow ? 'Yellow Card' : 'Red Card')} #${card.playerNumber} (${card.timeStamp})`, 15, yPos);
                 yPos += 7;
                 if (yPos > 280) {
                     doc.addPage();
@@ -1103,11 +1136,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         yPos += 10;
         
-        // Team B Summary
         doc.setFontSize(14);
         doc.text(teamB.name, 10, yPos);
         yPos += 10;
         doc.setFontSize(12);
+        doc.text(`Goals: ${teamBGoals}`, 10, yPos);
+        yPos += 7;
         doc.text(`Yellow Cards: ${teamBYellowCards}`, 10, yPos);
         yPos += 7;
         doc.text(`Red Cards: ${teamBRedCards}`, 10, yPos);
@@ -1117,10 +1151,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (teamB.cards.length > 0) {
             yPos += 5;
-            doc.text("Card Details:", 10, yPos);
+            doc.text("Event Details:", 10, yPos);
             yPos += 7;
             teamB.cards.forEach(card => {
-                doc.text(`- ${card.isYellow ? 'Yellow Card' : 'Red Card'} #${card.playerNumber} (${card.timeStamp})`, 15, yPos);
+                doc.text(`- ${card.isGoal ? 'Goal' : (card.isYellow ? 'Yellow Card' : 'Red Card')} #${card.playerNumber} (${card.timeStamp})`, 15, yPos);
                 yPos += 7;
                 if (yPos > 280) {
                     doc.addPage();
@@ -1147,7 +1181,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        // Save the PDF
         doc.save(`Match_Summary_${new Date().toISOString().slice(0,10)}.pdf`);
     }
 
@@ -1155,7 +1188,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const card = isTeamA 
             ? matchState.teamA.cards.find(c => c.id === cardId)
             : matchState.teamB.cards.find(c => c.id === cardId);
-        if (card) showCardDialog(isTeamA, card.isYellow, card);
+        if (card) showCardDialog(isTeamA, card.isYellow, card.isGoal, card);
     };
 
     window.editSubstitutionWindow = function(windowId, isTeamA) {
