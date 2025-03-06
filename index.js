@@ -5,7 +5,7 @@
 
 // เรียกใช้ฟังก์ชัน init() เมื่อเว็บโหลดเสร็จสมบูรณ์
 document.addEventListener('DOMContentLoaded', function() {
-  // ตรวจสอบหากมีฟังก์ชัน init ที่ถูกนิยามใน window
+  // ตรวจสอบหากมีฟังก์ชัน init ที่ถูกนิยามใน windows
   if (typeof window.init === 'function') {
     // เรียกใช้ฟังก์ชัน init
     window.init();
