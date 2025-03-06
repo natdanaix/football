@@ -1030,10 +1030,12 @@ document.addEventListener('DOMContentLoaded', function() {
     function saveSummaryAsPdf() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        
-        // Set font for Thai language support (Note: Requires additional font setup)
-        // doc.setFont("THSarabunNew", "normal"); // Uncomment and setup font if available
-        
+
+        // Add THSarabunNew font
+        doc.addFileToVFS('THSarabunNew.ttf', thsarabunnewFont); // Provided by thsarabunnew.js
+        doc.addFont('THSarabunNew.ttf', 'THSarabunNew', 'normal');
+        doc.setFont('THSarabunNew');
+
         // Add title
         doc.setFontSize(16);
         doc.text("สรุปผลการแข่งขัน", 105, 10, { align: "center" });
