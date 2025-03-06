@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let autoSaveTimer;
 
     // DOM Elements
+    const resetDataBtn = document.getElementById('resetDataBtn');
     const matchTimeEl = document.getElementById('matchTime');
     const injuryTimeEl = document.getElementById('injuryTime');
     const totalInjuryEl = document.getElementById('totalInjury');
@@ -177,6 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
         injuryBtn.addEventListener('click', toggleInjuryTime);
         injuryFab.addEventListener('click', toggleInjuryTime);
         endMatchBtn.addEventListener('click', endMatch);
+        resetDataBtn.addEventListener('click', resetAllData);
 
         teamAYellowBtn.addEventListener('click', () => showCardDialog(true, true, false));
         teamARedBtn.addEventListener('click', () => showCardDialog(true, false, false));
@@ -319,62 +321,62 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
    function updateUI() {
-    teamAHeader.textContent = matchState.teamA.name;
-    teamAHeader.style.backgroundColor = matchState.teamA.color;
-    teamBHeader.textContent = matchState.teamB.name;
-    teamBHeader.style.backgroundColor = matchState.teamB.color;
-    
-    // Update the scores in the header
-    const teamAScoreEl = document.getElementById('teamAScore');
-    const teamBScoreEl = document.getElementById('teamBScore');
-    teamAScoreEl.textContent = `${matchState.teamA.name} ${matchState.teamA.goals}`;
-    teamBScoreEl.textContent = `${matchState.teamB.name} ${matchState.teamB.goals}`;
-    
-    teamASubBtn.style.backgroundColor = matchState.teamA.color;
-    teamBSubBtn.style.backgroundColor = matchState.teamB.color;
-    
-    updateSubstitutionButtonsState();
-    
-    matchTimeEl.textContent = matchState.elapsedTime;
-    
-    if (matchState.isInjuryTimeActive) {
-        injuryTimeEl.textContent = matchState.currentInjuryTimeDisplay;
-        injuryTimeEl.style.display = 'block';
-        totalInjuryEl.style.display = 'none';
-        injuryBtn.classList.add('active');
-        injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Stop Injury Time';
-        injuryFab.classList.add('injury-active');
-        injuryFab.innerHTML = '<i class="fas fa-stopwatch"></i>';
-    } else if (matchState.totalInjurySeconds > 0) {
-        injuryTimeEl.style.display = 'none';
-        totalInjuryEl.textContent = getTotalInjuryTimeDisplay();
-        totalInjuryEl.style.display = 'block';
-        injuryBtn.classList.remove('active');
-        injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Injury Time';
-        injuryFab.classList.remove('injury-active');
-        injuryFab.innerHTML = '<i class="fas fa-stopwatch"></i>';
-    } else {
-        injuryTimeEl.style.display = 'none';
-        totalInjuryEl.style.display = 'none';
-        injuryBtn.classList.remove('active');
-        injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Injury Time';
-        injuryFab.classList.remove('injury-active');
-        injuryFab.innerHTML = '<i class="fas fa-stopwatch"></i>';
+        teamAHeader.textContent = matchState.teamA.name;
+        teamAHeader.style.backgroundColor = matchState.teamA.color;
+        teamBHeader.textContent = matchState.teamB.name;
+        teamBHeader.style.backgroundColor = matchState.teamB.color;
+        
+        // Update the scores in the header without team names
+        const teamAScoreEl = document.getElementById('teamAScore');
+        const teamBScoreEl = document.getElementById('teamBScore');
+        teamAScoreEl.textContent = matchState.teamA.goals;
+        teamBScoreEl.textContent = matchState.teamB.goals;
+        
+        teamASubBtn.style.backgroundColor = matchState.teamA.color;
+        teamBSubBtn.style.backgroundColor = matchState.teamB.color;
+        
+        updateSubstitutionButtonsState();
+        
+        matchTimeEl.textContent = matchState.elapsedTime;
+        
+        if (matchState.isInjuryTimeActive) {
+            injuryTimeEl.textContent = matchState.currentInjuryTimeDisplay;
+            injuryTimeEl.style.display = 'block';
+            totalInjuryEl.style.display = 'none';
+            injuryBtn.classList.add('active');
+            injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Stop Injury Time';
+            injuryFab.classList.add('injury-active');
+            injuryFab.innerHTML = '<i class="fas fa-stopwatch"></i>';
+        } else if (matchState.totalInjurySeconds > 0) {
+            injuryTimeEl.style.display = 'none';
+            totalInjuryEl.textContent = getTotalInjuryTimeDisplay();
+            totalInjuryEl.style.display = 'block';
+            injuryBtn.classList.remove('active');
+            injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Injury Time';
+            injuryFab.classList.remove('injury-active');
+            injuryFab.innerHTML = '<i class="fas fa-stopwatch"></i>';
+        } else {
+            injuryTimeEl.style.display = 'none';
+            totalInjuryEl.style.display = 'none';
+            injuryBtn.classList.remove('active');
+            injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Injury Time';
+            injuryFab.classList.remove('injury-active');
+            injuryFab.innerHTML = '<i class="fas fa-stopwatch"></i>';
+        }
+        
+        if (matchState.isMatchStarted) {
+            matchControlsEl.style.display = 'none';
+            injuryControlsEl.style.display = 'flex';
+            injuryFab.style.display = 'flex';
+        } else {
+            matchControlsEl.style.display = 'flex';
+            injuryControlsEl.style.display = 'none';
+            injuryFab.style.display = 'none';
+        }
+        
+        renderTeamCards();
+        renderTeamSubstitutions();
     }
-    
-    if (matchState.isMatchStarted) {
-        matchControlsEl.style.display = 'none';
-        injuryControlsEl.style.display = 'flex';
-        injuryFab.style.display = 'flex';
-    } else {
-        matchControlsEl.style.display = 'flex';
-        injuryControlsEl.style.display = 'none';
-        injuryFab.style.display = 'none';
-    }
-    
-    renderTeamCards();
-    renderTeamSubstitutions();
-}
 
     function updateSubstitutionButtonsState() {
         if (matchState.isMatchStarted) {
