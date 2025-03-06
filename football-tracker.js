@@ -1,5 +1,5 @@
 // เวอร์ชันที่ได้รับการแก้ไขของ football-tracker.js
-// สร้างตัวแปร global เพื่อเข้าถึงได้จากไฟล์อื่น
+// สร้างตัวแปร global เพื่อเข้าถึงได้จากไฟล์อื่นabcdef
 
 window.init = function() {
     // Initialize data storage
