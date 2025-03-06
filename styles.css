@@ -68,12 +68,12 @@ header {
 
 .timer-container {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     margin-top: 10px;
     padding: 0 20px;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 20px; /* Increased gap for better spacing with numbers only */
 }
 
 .match-time {
@@ -83,25 +83,27 @@ header {
     font-weight: bold;
     padding: 8px 16px;
     border-radius: 12px;
-    order: 2; /* Ensures match time stays in the center */
+    order: 2;
 }
 
 .team-score {
     background-color: #FFFFFF;
     color: var(--text-primary);
-    font-size: 1.2rem;
+    font-size: 1.5rem; /* Increased size for visibility */
     font-weight: bold;
     padding: 6px 12px;
     border-radius: 12px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    min-width: 40px; /* Ensures consistent width for single-digit scores */
+    text-align: center;
 }
 
 #teamAScore {
-    order: 1; /* Left side */
+    order: 1;
 }
 
 #teamBScore {
-    order: 3; /* Right side */
+    order: 3;
 }
 
 .injury-time {
@@ -148,6 +150,11 @@ header {
 
 .start-btn {
     background-color: #4CAF50;
+    color: white;
+}
+
+.reset-btn {
+    background-color: #D32F2F;
     color: white;
 }
 
