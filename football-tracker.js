@@ -5,14 +5,14 @@ document.addEventListener('DOMContentLoaded', function() {
         startTime: null,
         elapsedTime: "00:00",
         teamA: {
-            name: "ทีม A",
+            name: "Team A",
             color: "#1976D2",
             cards: [],
             substitutions: [],
             subWindows: 0,
         },
         teamB: {
-            name: "ทีม B",
+            name: "Team B",
             color: "#D32F2F",
             cards: [],
             substitutions: [],
@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <!-- Additional player substitutions will be added here -->
         </div>
         <button class="modal-btn add-btn" id="addAnotherSubBtn">
-            <i class="fas fa-plus"></i> เพิ่มผู้เล่นที่จะเปลี่ยนตัว
+            <i class="fas fa-plus"></i> Add Another Substitution
         </button>
     `;
 
@@ -327,7 +327,7 @@ document.addEventListener('DOMContentLoaded', function() {
             injuryTimeEl.style.display = 'block';
             totalInjuryEl.style.display = 'none';
             injuryBtn.classList.add('active');
-            injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> หยุดทดเวลา';
+            injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Stop Injury Time';
             injuryFab.classList.add('injury-active');
             injuryFab.innerHTML = '<i class="fas fa-stopwatch"></i>';
         } else if (matchState.totalInjurySeconds > 0) {
@@ -335,14 +335,14 @@ document.addEventListener('DOMContentLoaded', function() {
             totalInjuryEl.textContent = getTotalInjuryTimeDisplay();
             totalInjuryEl.style.display = 'block';
             injuryBtn.classList.remove('active');
-            injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> ทดเวลา';
+            injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Injury Time';
             injuryFab.classList.remove('injury-active');
             injuryFab.innerHTML = '<i class="fas fa-stopwatch"></i>';
         } else {
             injuryTimeEl.style.display = 'none';
             totalInjuryEl.style.display = 'none';
             injuryBtn.classList.remove('active');
-            injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> ทดเวลา';
+            injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Injury Time';
             injuryFab.classList.remove('injury-active');
             injuryFab.innerHTML = '<i class="fas fa-stopwatch"></i>';
         }
@@ -366,21 +366,21 @@ document.addEventListener('DOMContentLoaded', function() {
             if (matchState.teamA.subWindows >= 3 && !matchState.activeSubWindow.teamA) {
                 teamASubBtn.disabled = true;
                 teamASubBtn.classList.add('disabled');
-                teamASubBtn.innerHTML = 'ใช้โควต้าหมดแล้ว';
+                teamASubBtn.innerHTML = 'Substitution Quota Exhausted';
             } else {
                 teamASubBtn.disabled = false;
                 teamASubBtn.classList.remove('disabled');
-                teamASubBtn.innerHTML = 'เปลี่ยนตัว' + (matchState.activeSubWindow.teamA ? ' (เปิดอยู่)' : '');
+                teamASubBtn.innerHTML = 'Substitution' + (matchState.activeSubWindow.teamA ? ' (Active)' : '');
             }
             
             if (matchState.teamB.subWindows >= 3 && !matchState.activeSubWindow.teamB) {
                 teamBSubBtn.disabled = true;
                 teamBSubBtn.classList.add('disabled');
-                teamBSubBtn.innerHTML = 'ใช้โควต้าหมดแล้ว';
+                teamBSubBtn.innerHTML = 'Substitution Quota Exhausted';
             } else {
                 teamBSubBtn.disabled = false;
                 teamBSubBtn.classList.remove('disabled');
-                teamBSubBtn.innerHTML = 'เปลี่ยนตัว' + (matchState.activeSubWindow.teamB ? ' (เปิดอยู่)' : '');
+                teamBSubBtn.innerHTML = 'Substitution' + (matchState.activeSubWindow.teamB ? ' (Active)' : '');
             }
         }
     }
@@ -410,8 +410,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     <i class="fas fa-square"></i>
                 </div>
                 <div class="event-details">
-                    <div class="event-title">${card.isYellow ? 'ใบเหลือง' : 'ใบแดง'} - #${card.playerNumber}</div>
-                    <div class="event-time">เวลา: ${card.timeStamp}</div>
+                    <div class="event-title">${card.isYellow ? 'Yellow Card' : 'Red Card'} - #${card.playerNumber}</div>
+                    <div class="event-time">Time: ${card.timeStamp}</div>
                 </div>
                 <button class="edit-btn" onclick="editCard('${card.id}', ${isTeamA})">
                     <i class="fas fa-edit"></i>
@@ -473,7 +473,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function createSubWindowHTML(window, windowNumber, isTeamA) {
         const subsHTML = window.substitutions.map(sub => 
             `<div class="sub-entry">
-                <span class="player-numbers">#${sub.playerInNumber} เข้า, #${sub.playerOutNumber} ออก</span>
+                <span class="player-numbers">#${sub.playerInNumber} In, #${sub.playerOutNumber} Out</span>
             </div>`
         ).join('');
         
@@ -483,8 +483,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     <i class="fas fa-exchange-alt"></i>
                 </div>
                 <div class="event-details">
-                    <div class="event-title">ช่วงเปลี่ยนตัวที่ ${windowNumber} (${window.substitutions.length} คน)</div>
-                    <div class="event-time">เวลา: ${window.timeStamp}</div>
+                    <div class="event-title">Substitution Window ${windowNumber} (${window.substitutions.length} Players)</div>
+                    <div class="event-time">Time: ${window.timeStamp}</div>
                     <div class="substitutions-list">
                         ${subsHTML}
                     </div>
@@ -525,7 +525,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function toggleInjuryTime() {
         if (!matchState.isMatchStarted) {
-            alert('โปรดเริ่มการแข่งขันก่อน');
+            alert('Please start the match first');
             return;
         }
         
@@ -537,7 +537,7 @@ document.addEventListener('DOMContentLoaded', function() {
             injuryTimeEl.style.display = 'block';
             totalInjuryEl.style.display = 'none';
             injuryBtn.classList.add('active');
-            injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> หยุดทดเวลา';
+            injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Stop Injury Time';
             injuryFab.classList.add('injury-active');
         } else {
             if (matchState.currentInjuryStartTime) {
@@ -557,7 +557,7 @@ document.addEventListener('DOMContentLoaded', function() {
             totalInjuryEl.textContent = getTotalInjuryTimeDisplay();
             totalInjuryEl.style.display = 'block';
             injuryBtn.classList.remove('active');
-            injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> ทดเวลา';
+            injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Injury Time';
             injuryFab.classList.remove('injury-active');
         }
         
@@ -587,17 +587,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const currentSecs = String(currentPeriodSeconds % 60).padStart(2, '0');
         
         let summaryHTML = `
-            <p>เวลาทดเจ็บช่วงนี้: +${currentMins}:${currentSecs}</p>
-            <p style="margin-top: 8px;">เวลาทดเจ็บสะสมทั้งหมด: +${totalMins}:${totalSecs}</p>
+            <p>Current Injury Time Period: +${currentMins}:${currentSecs}</p>
+            <p style="margin-top: 8px;">Total Accumulated Injury Time: +${totalMins}:${totalSecs}</p>
         `;
         
         if (matchState.injuryTimePeriods.length > 1) {
             summaryHTML += `
                 <div style="margin-top: 16px;">
-                    <p>ประวัติเวลาทดเจ็บ:</p>
+                    <p>Injury Time History:</p>
                     <div style="margin-top: 8px;">
                         ${matchState.injuryTimePeriods.map((period, index) => 
-                            `<p>ช่วงที่ ${index + 1}: ${period}</p>`
+                            `<p>Period ${index + 1}: ${period}</p>`
                         ).join('')}
                     </div>
                 </div>
@@ -616,8 +616,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function saveTeamSettings() {
-        const teamAName = teamANameInput.value.trim() || 'ทีม A';
-        const teamBName = teamBNameInput.value.trim() || 'ทีม B';
+        const teamAName = teamANameInput.value.trim() || 'Team A';
+        const teamBName = teamBNameInput.value.trim() || 'Team B';
         const teamAColorOption = document.querySelector('#teamAColorPicker .color-option.selected');
         const teamBColorOption = document.querySelector('#teamBColorPicker .color-option.selected');
         const teamAColor = teamAColorOption ? teamAColorOption.style.backgroundColor : matchState.teamA.color;
@@ -635,14 +635,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function showCardDialog(isTeamA, isYellow, cardToEdit = null) {
         if (!matchState.isMatchStarted && !cardToEdit) {
-            alert('โปรดเริ่มการแข่งขันก่อน');
+            alert('Please start the match first');
             return;
         }
         
         currentCardContext = { isTeamA, isYellow, cardToEdit };
         const teamName = isTeamA ? matchState.teamA.name : matchState.teamB.name;
-        const cardType = isYellow ? 'ใบเหลือง' : 'ใบแดง';
-        cardModalTitle.textContent = `${cardToEdit ? 'แก้ไข ' : ''}${cardType} - ${teamName}`;
+        const cardType = isYellow ? 'Yellow Card' : 'Red Card';
+        cardModalTitle.textContent = `${cardToEdit ? 'Edit ' : ''}${cardType} - ${teamName}`;
         playerNumberInput.value = cardToEdit ? cardToEdit.playerNumber : '';
         
         if (cardToEdit) {
@@ -651,7 +651,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 deleteBtn = document.createElement('button');
                 deleteBtn.id = 'deleteCardBtn';
                 deleteBtn.className = 'modal-btn delete-btn';
-                deleteBtn.textContent = 'ลบ';
+                deleteBtn.textContent = 'Delete';
                 deleteBtn.addEventListener('click', deleteCardEvent);
                 cardModalActions.insertBefore(deleteBtn, cancelCardBtn);
             }
@@ -669,7 +669,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function saveCardEvent() {
         const playerNumber = playerNumberInput.value.trim();
         if (!playerNumber) {
-            alert('กรุณาระบุหมายเลขผู้เล่น');
+            alert('Please enter a player number');
             return;
         }
         
@@ -712,21 +712,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function showSubstitutionDialog(isTeamA, windowToEdit = null) {
         if (!matchState.isMatchStarted && !windowToEdit) {
-            alert('โปรดเริ่มการแข่งขันก่อน');
+            alert('Please start the match first');
             return;
         }
         
         if (!windowToEdit && !matchState.activeSubWindow[isTeamA ? 'teamA' : 'teamB']) {
             const team = isTeamA ? matchState.teamA : matchState.teamB;
             if (team.subWindows >= 3) {
-                alert(`${team.name} ได้ใช้ช่วงเปลี่ยนตัวครบ 3 ครั้งแล้ว`);
+                alert(`${team.name} has used all 3 substitution windows`);
                 return;
             }
         }
         
         currentSubContext = { isTeamA, windowToEdit, additionalSubs: [] };
         const teamName = isTeamA ? matchState.teamA.name : matchState.teamB.name;
-        subModalTitle.textContent = `${windowToEdit ? 'แก้ไข ' : ''}เปลี่ยนตัว - ${teamName}`;
+        subModalTitle.textContent = `${windowToEdit ? 'Edit ' : ''}Substitution - ${teamName}`;
         playerInInput.value = '';
         playerOutInput.value = '';
         
@@ -757,7 +757,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 deleteBtn = document.createElement('button');
                 deleteBtn.id = 'deleteSubWindowBtn';
                 deleteBtn.className = 'modal-btn delete-btn';
-                deleteBtn.textContent = 'ลบช่วงเปลี่ยนตัวนี้';
+                deleteBtn.textContent = 'Delete This Substitution Window';
                 deleteBtn.addEventListener('click', deleteSubstitutionWindow);
                 subModalActions.insertBefore(deleteBtn, cancelSubBtn);
             }
@@ -776,18 +776,18 @@ document.addEventListener('DOMContentLoaded', function() {
         subFieldsContainer.className = 'substitution-fields';
         subFieldsContainer.innerHTML = `
             <div class="sub-header">
-                <span>ผู้เล่นเพิ่มเติม</span>
+                <span>Additional Player</span>
                 <button type="button" class="remove-sub-btn">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="input-group">
-                <div class="input-label">หมายเลขผู้เล่นที่เข้า</div>
-                <input type="number" class="input-field player-in" placeholder="เลขผู้เล่นที่เข้า" value="${playerIn}">
+                <div class="input-label">Player In Number</div>
+                <input type="number" class="input-field player-in" placeholder="Player In Number" value="${playerIn}">
             </div>
             <div class="input-group">
-                <div class="input-label">หมายเลขผู้เล่นที่ออก</div>
-                <input type="number" class="input-field player-out" placeholder="เลขผู้เล่นที่ออก" value="${playerOut}">
+                <div class="input-label">Player Out Number</div>
+                <input type="number" class="input-field player-out" placeholder="Player Out Number" value="${playerOut}">
             </div>
         `;
         
@@ -818,7 +818,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const playerIn = playerInInput.value.trim();
         const playerOut = playerOutInput.value.trim();
         if (!playerIn || !playerOut) {
-            alert('กรุณาระบุหมายเลขผู้เล่นทั้งเข้าและออก');
+            alert('Please enter both player in and player out numbers');
             return;
         }
         
@@ -910,14 +910,14 @@ document.addEventListener('DOMContentLoaded', function() {
             startTime: null,
             elapsedTime: "00:00",
             teamA: {
-                name: "ทีม A",
+                name: "Team A",
                 color: "#1976D2",
                 cards: [],
                 substitutions: [],
                 subWindows: 0
             },
             teamB: {
-                name: "ทีม B",
+                name: "Team B",
                 color: "#D32F2F",
                 cards: [],
                 substitutions: [],
@@ -941,7 +941,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function endMatch() {
         if (!matchState.isMatchStarted) {
-            alert('ยังไม่มีการแข่งขันให้จบ');
+            alert('There is no match to end');
             return;
         }
         clearInterval(matchTimer);
@@ -964,30 +964,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let summaryHTML = `
             <div style="margin-bottom: 16px;">
-                <h3 style="margin-bottom: 8px;">ระยะเวลาการแข่งขัน</h3>
-                <p>เวลาแข่งขันปกติ: ${totalMatchTime}</p>
-                <p>เวลาทดเจ็บรวม: ${totalInjuryTime}</p>
+                <h3 style="margin-bottom: 8px;">Match Duration</h3>
+                <p>Normal Match Time: ${totalMatchTime}</p>
+                <p>Total Injury Time: ${totalInjuryTime}</p>
             </div>
             <div style="margin-bottom: 16px;">
                 <h3 style="margin-bottom: 8px;">${teamA.name}</h3>
-                <p>ใบเหลือง: ${teamAYellowCards} ใบ</p>
-                <p>ใบแดง: ${teamARedCards} ใบ</p>
-                <p>จำนวนครั้งเปลี่ยนตัว: ${teamASubWindows.length} ครั้ง (${teamA.substitutions.length} คน)</p>
+                <p>Yellow Cards: ${teamAYellowCards}</p>
+                <p>Red Cards: ${teamARedCards}</p>
+                <p>Substitution Windows: ${teamASubWindows.length} (${teamA.substitutions.length} Players)</p>
                 ${teamA.cards.length > 0 ? `
                     <div style="margin-top: 8px;">
-                        <p>รายละเอียดใบเตือน:</p>
+                        <p>Card Details:</p>
                         ${teamA.cards.map(card => `
-                            <p style="margin-left: 16px;">- ${card.isYellow ? 'ใบเหลือง' : 'ใบแดง'} #${card.playerNumber} (${card.timeStamp})</p>
+                            <p style="margin-left: 16px;">- ${card.isYellow ? 'Yellow Card' : 'Red Card'} #${card.playerNumber} (${card.timeStamp})</p>
                         `).join('')}
                     </div>
                 ` : ''}
                 ${teamASubWindows.length > 0 ? `
                     <div style="margin-top: 8px;">
-                        <p>รายละเอียดการเปลี่ยนตัว:</p>
+                        <p>Substitution Details:</p>
                         ${teamASubWindows.map((window, index) => `
-                            <p style="margin-left: 16px;">- ครั้งที่ ${index + 1} (${window.timeStamp}):</p>
+                            <p style="margin-left: 16px;">- Window ${index + 1} (${window.timeStamp}):</p>
                             ${window.substitutions.map(sub => `
-                                <p style="margin-left: 32px;">#${sub.playerInNumber} เข้า, #${sub.playerOutNumber} ออก</p>
+                                <p style="margin-left: 32px;">#${sub.playerInNumber} In, #${sub.playerOutNumber} Out</p>
                             `).join('')}
                         `).join('')}
                     </div>
@@ -995,24 +995,24 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
             <div>
                 <h3 style="margin-bottom: 8px;">${teamB.name}</h3>
-                <p>ใบเหลือง: ${teamBYellowCards} ใบ</p>
-                <p>ใบแดง: ${teamBRedCards} ใบ</p>
-                <p>จำนวนครั้งเปลี่ยนตัว: ${teamBSubWindows.length} ครั้ง (${teamB.substitutions.length} คน)</p>
+                <p>Yellow Cards: ${teamBYellowCards}</p>
+                <p>Red Cards: ${teamBRedCards}</p>
+                <p>Substitution Windows: ${teamBSubWindows.length} (${teamB.substitutions.length} Players)</p>
                 ${teamB.cards.length > 0 ? `
                     <div style="margin-top: 8px;">
-                        <p>รายละเอียดใบเตือน:</p>
+                        <p>Card Details:</p>
                         ${teamB.cards.map(card => `
-                            <p style="margin-left: 16px;">- ${card.isYellow ? 'ใบเหลือง' : 'ใบแดง'} #${card.playerNumber} (${card.timeStamp})</p>
+                            <p style="margin-left: 16px;">- ${card.isYellow ? 'Yellow Card' : 'Red Card'} #${card.playerNumber} (${card.timeStamp})</p>
                         `).join('')}
                     </div>
                 ` : ''}
                 ${teamBSubWindows.length > 0 ? `
                     <div style="margin-top: 8px;">
-                        <p>รายละเอียดการเปลี่ยนตัว:</p>
+                        <p>Substitution Details:</p>
                         ${teamBSubWindows.map((window, index) => `
-                            <p style="margin-left: 16px;">- ครั้งที่ ${index + 1} (${window.timeStamp}):</p>
+                            <p style="margin-left: 16px;">- Window ${index + 1} (${window.timeStamp}):</p>
                             ${window.substitutions.map(sub => `
-                                <p style="margin-left: 32px;">#${sub.playerInNumber} เข้า, #${sub.playerOutNumber} ออก</p>
+                                <p style="margin-left: 32px;">#${sub.playerInNumber} In, #${sub.playerOutNumber} Out</p>
                             `).join('')}
                         `).join('')}
                     </div>
@@ -1031,12 +1031,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         
-        // Set font for Thai language support (Note: Requires additional font setup)
-        // doc.setFont("THSarabunNew", "normal"); // Uncomment and setup font if available
-        
         // Add title
         doc.setFontSize(16);
-        doc.text("สรุปผลการแข่งขัน", 105, 10, { align: "center" });
+        doc.text("Match Summary", 105, 10, { align: "center" });
         
         // Prepare content
         const teamA = matchState.teamA;
@@ -1052,12 +1049,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Match Duration
         doc.setFontSize(14);
-        doc.text("ระยะเวลาการแข่งขัน", 10, yPos);
+        doc.text("Match Duration", 10, yPos);
         yPos += 10;
         doc.setFontSize(12);
-        doc.text(`เวลาแข่งขันปกติ: ${matchState.elapsedTime}`, 10, yPos);
+        doc.text(`Normal Match Time: ${matchState.elapsedTime}`, 10, yPos);
         yPos += 7;
-        doc.text(`เวลาทดเจ็บรวม: ${getTotalInjuryTimeDisplay()}`, 10, yPos);
+        doc.text(`Total Injury Time: ${getTotalInjuryTimeDisplay()}`, 10, yPos);
         yPos += 10;
         
         // Team A Summary
@@ -1065,19 +1062,19 @@ document.addEventListener('DOMContentLoaded', function() {
         doc.text(teamA.name, 10, yPos);
         yPos += 10;
         doc.setFontSize(12);
-        doc.text(`ใบเหลือง: ${teamAYellowCards} ใบ`, 10, yPos);
+        doc.text(`Yellow Cards: ${teamAYellowCards}`, 10, yPos);
         yPos += 7;
-        doc.text(`ใบแดง: ${teamARedCards} ใบ`, 10, yPos);
+        doc.text(`Red Cards: ${teamARedCards}`, 10, yPos);
         yPos += 7;
-        doc.text(`จำนวนครั้งเปลี่ยนตัว: ${teamASubWindows.length} ครั้ง (${teamA.substitutions.length} คน)`, 10, yPos);
+        doc.text(`Substitution Windows: ${teamASubWindows.length} (${teamA.substitutions.length} Players)`, 10, yPos);
         yPos += 7;
         
         if (teamA.cards.length > 0) {
             yPos += 5;
-            doc.text("รายละเอียดใบเตือน:", 10, yPos);
+            doc.text("Card Details:", 10, yPos);
             yPos += 7;
             teamA.cards.forEach(card => {
-                doc.text(`- ${card.isYellow ? 'ใบเหลือง' : 'ใบแดง'} #${card.playerNumber} (${card.timeStamp})`, 15, yPos);
+                doc.text(`- ${card.isYellow ? 'Yellow Card' : 'Red Card'} #${card.playerNumber} (${card.timeStamp})`, 15, yPos);
                 yPos += 7;
                 if (yPos > 280) {
                     doc.addPage();
@@ -1088,13 +1085,13 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (teamASubWindows.length > 0) {
             yPos += 5;
-            doc.text("รายละเอียดการเปลี่ยนตัว:", 10, yPos);
+            doc.text("Substitution Details:", 10, yPos);
             yPos += 7;
             teamASubWindows.forEach((window, index) => {
-                doc.text(`- ครั้งที่ ${index + 1} (${window.timeStamp}):`, 15, yPos);
+                doc.text(`- Window ${index + 1} (${window.timeStamp}):`, 15, yPos);
                 yPos += 7;
                 window.substitutions.forEach(sub => {
-                    doc.text(`  #${sub.playerInNumber} เข้า, #${sub.playerOutNumber} ออก`, 20, yPos);
+                    doc.text(`  #${sub.playerInNumber} In, #${sub.playerOutNumber} Out`, 20, yPos);
                     yPos += 7;
                     if (yPos > 280) {
                         doc.addPage();
@@ -1111,19 +1108,19 @@ document.addEventListener('DOMContentLoaded', function() {
         doc.text(teamB.name, 10, yPos);
         yPos += 10;
         doc.setFontSize(12);
-        doc.text(`ใบเหลือง: ${teamBYellowCards} ใบ`, 10, yPos);
+        doc.text(`Yellow Cards: ${teamBYellowCards}`, 10, yPos);
         yPos += 7;
-        doc.text(`ใบแดง: ${teamBRedCards} ใบ`, 10, yPos);
+        doc.text(`Red Cards: ${teamBRedCards}`, 10, yPos);
         yPos += 7;
-        doc.text(`จำนวนครั้งเปลี่ยนตัว: ${teamBSubWindows.length} ครั้ง (${teamB.substitutions.length} คน)`, 10, yPos);
+        doc.text(`Substitution Windows: ${teamBSubWindows.length} (${teamB.substitutions.length} Players)`, 10, yPos);
         yPos += 7;
         
         if (teamB.cards.length > 0) {
             yPos += 5;
-            doc.text("รายละเอียดใบเตือน:", 10, yPos);
+            doc.text("Card Details:", 10, yPos);
             yPos += 7;
             teamB.cards.forEach(card => {
-                doc.text(`- ${card.isYellow ? 'ใบเหลือง' : 'ใบแดง'} #${card.playerNumber} (${card.timeStamp})`, 15, yPos);
+                doc.text(`- ${card.isYellow ? 'Yellow Card' : 'Red Card'} #${card.playerNumber} (${card.timeStamp})`, 15, yPos);
                 yPos += 7;
                 if (yPos > 280) {
                     doc.addPage();
@@ -1134,13 +1131,13 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (teamBSubWindows.length > 0) {
             yPos += 5;
-            doc.text("รายละเอียดการเปลี่ยนตัว:", 10, yPos);
+            doc.text("Substitution Details:", 10, yPos);
             yPos += 7;
             teamBSubWindows.forEach((window, index) => {
-                doc.text(`- ครั้งที่ ${index + 1} (${window.timeStamp}):`, 15, yPos);
+                doc.text(`- Window ${index + 1} (${window.timeStamp}):`, 15, yPos);
                 yPos += 7;
                 window.substitutions.forEach(sub => {
-                    doc.text(`  #${sub.playerInNumber} เข้า, #${sub.playerOutNumber} ออก`, 20, yPos);
+                    doc.text(`  #${sub.playerInNumber} In, #${sub.playerOutNumber} Out`, 20, yPos);
                     yPos += 7;
                     if (yPos > 280) {
                         doc.addPage();
