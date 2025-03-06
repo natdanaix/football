@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
             cards: [],
             substitutions: [],
             subWindows: 0,
-            goals: 0 // Added goals property
+            goals: 0
         },
         teamB: {
             name: "Team B",
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
             cards: [],
             substitutions: [],
             subWindows: 0,
-            goals: 0 // Added goals property
+            goals: 0
         },
         isInjuryTimeActive: false,
         totalInjurySeconds: 0,
@@ -28,7 +28,10 @@ document.addEventListener('DOMContentLoaded', function() {
         activeSubWindow: {
             teamA: false,
             teamB: false
-        }
+        },
+        halfTime: 1, // 1 = First Half, 2 = Second Half
+        isHalfTimeReached: false, // ครบ 45 หรือ 90 นาที
+        injuryCountdownSeconds: 0 // จำนวนวินาทีสำหรับนับถอยหลัง injury time
     };
 
     // Timer variables
@@ -37,12 +40,12 @@ document.addEventListener('DOMContentLoaded', function() {
     let autoSaveTimer;
 
     // DOM Elements
-    
     const resetDataBtn = document.getElementById('resetDataBtn');
     const matchTimeEl = document.getElementById('matchTime');
     const injuryTimeEl = document.getElementById('injuryTime');
     const totalInjuryEl = document.getElementById('totalInjury');
     const startMatchBtn = document.getElementById('startMatchBtn');
+    const startSecondHalfBtn = document.getElementById('startSecondHalfBtn');
     const matchControlsEl = document.getElementById('matchControls');
     const injuryControlsEl = document.getElementById('injuryControls');
     const injuryBtn = document.getElementById('injuryBtn');
@@ -55,13 +58,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const teamAYellowBtn = document.getElementById('teamAYellowBtn');
     const teamARedBtn = document.getElementById('teamARedBtn');
     const teamASubBtn = document.getElementById('teamASubBtn');
-    const teamAGoalBtn = document.getElementById('teamAGoalBtn'); // Added Goal button
+    const teamAGoalBtn = document.getElementById('teamAGoalBtn');
 
     // Team B buttons
     const teamBYellowBtn = document.getElementById('teamBYellowBtn');
     const teamBRedBtn = document.getElementById('teamBRedBtn');
     const teamBSubBtn = document.getElementById('teamBSubBtn');
-    const teamBGoalBtn = document.getElementById('teamBGoalBtn'); // Added Goal button
+    const teamBGoalBtn = document.getElementById('teamBGoalBtn');
 
     // Content containers
     const teamACardsContent = document.getElementById('teamACardsContent');
@@ -91,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const saveTeamSettingsBtn = document.getElementById('saveTeamSettingsBtn');
     const cancelTeamSettingsBtn = document.getElementById('cancelTeamSettingsBtn');
 
-    // Card Modal (reused for goals)
+    // Card Modal
     const cardModal = document.getElementById('cardModal');
     const cardModalTitle = document.getElementById('cardModalTitle');
     const playerNumberInput = document.getElementById('playerNumberInput');
@@ -151,7 +154,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentCardContext = {
         isTeamA: true,
         isYellow: true,
-        isGoal: false, // Added for goal tracking
+        isGoal: false,
         cardToEdit: null
     };
 
@@ -176,21 +179,21 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set up all event listeners
     function setupEventListeners() {
         startMatchBtn.addEventListener('click', startMatch);
+        startSecondHalfBtn.addEventListener('click', startSecondHalf);
         injuryBtn.addEventListener('click', toggleInjuryTime);
         injuryFab.addEventListener('click', toggleInjuryTime);
         endMatchBtn.addEventListener('click', endMatch);
         resetDataBtn.addEventListener('click', resetAllData);
-       
 
         teamAYellowBtn.addEventListener('click', () => showCardDialog(true, true, false));
         teamARedBtn.addEventListener('click', () => showCardDialog(true, false, false));
         teamASubBtn.addEventListener('click', () => showSubstitutionDialog(true));
-        teamAGoalBtn.addEventListener('click', () => showCardDialog(true, false, true)); // Goal button for Team A
+        teamAGoalBtn.addEventListener('click', () => showCardDialog(true, false, true));
         
         teamBYellowBtn.addEventListener('click', () => showCardDialog(false, true, false));
         teamBRedBtn.addEventListener('click', () => showCardDialog(false, false, false));
         teamBSubBtn.addEventListener('click', () => showSubstitutionDialog(false));
-        teamBGoalBtn.addEventListener('click', () => showCardDialog(false, false, true)); // Goal button for Team B
+        teamBGoalBtn.addEventListener('click', () => showCardDialog(false, false, true));
         
         tabElements.forEach(tab => {
             tab.addEventListener('click', () => {
@@ -322,13 +325,12 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.removeItem('matchData');
     }
 
-  function updateUI() {
+    function updateUI() {
         teamAHeader.textContent = matchState.teamA.name;
         teamAHeader.style.backgroundColor = matchState.teamA.color;
         teamBHeader.textContent = matchState.teamB.name;
         teamBHeader.style.backgroundColor = matchState.teamB.color;
         
-        // Update the scores in the header without team names
         const teamAScoreEl = document.getElementById('teamAScore');
         const teamBScoreEl = document.getElementById('teamBScore');
         teamAScoreEl.textContent = matchState.teamA.goals;
@@ -340,8 +342,14 @@ document.addEventListener('DOMContentLoaded', function() {
         updateSubstitutionButtonsState();
         
         matchTimeEl.textContent = matchState.elapsedTime;
-        
-        if (matchState.isInjuryTimeActive) {
+
+        if (matchState.isHalfTimeReached && matchState.injuryCountdownSeconds > 0) {
+            injuryTimeEl.textContent = matchState.currentInjuryTimeDisplay;
+            injuryTimeEl.style.display = 'block';
+            totalInjuryEl.style.display = 'none';
+            injuryBtn.style.display = 'none';
+            injuryFab.style.display = 'none';
+        } else if (matchState.isInjuryTimeActive) {
             injuryTimeEl.textContent = matchState.currentInjuryTimeDisplay;
             injuryTimeEl.style.display = 'block';
             totalInjuryEl.style.display = 'none';
@@ -370,10 +378,13 @@ document.addEventListener('DOMContentLoaded', function() {
             matchControlsEl.style.display = 'none';
             injuryControlsEl.style.display = 'flex';
             injuryFab.style.display = 'flex';
+            startSecondHalfBtn.style.display = 'none';
         } else {
             matchControlsEl.style.display = 'flex';
             injuryControlsEl.style.display = 'none';
             injuryFab.style.display = 'none';
+            startMatchBtn.style.display = matchState.halfTime === 1 ? 'block' : 'none';
+            startSecondHalfBtn.style.display = matchState.halfTime === 2 ? 'block' : 'none';
         }
         
         renderTeamCards();
@@ -517,8 +528,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function startMatch() {
+        if (matchState.halfTime !== 1) return;
         matchState.isMatchStarted = true;
         matchState.startTime = new Date();
+        matchState.isHalfTimeReached = false;
+        startTimers();
+        updateUI();
+        saveMatchData();
+    }
+
+    function startSecondHalf() {
+        if (matchState.halfTime !== 2) return;
+        matchState.isMatchStarted = true;
+        matchState.startTime = new Date();
+        matchState.isHalfTimeReached = false;
+        matchState.elapsedTime = "45:00";
+        matchState.totalInjurySeconds = 0;
+        matchState.injuryTimePeriods = [];
         startTimers();
         updateUI();
         saveMatchData();
@@ -537,10 +563,54 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!matchState.startTime) return;
         const now = new Date();
         const difference = now - matchState.startTime;
-        const minutes = Math.floor(difference / 60000);
-        const seconds = Math.floor((difference % 60000) / 1000);
-        matchState.elapsedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-        matchTimeEl.textContent = matchState.elapsedTime;
+        const totalSeconds = Math.floor(difference / 1000);
+        let baseMinutes = matchState.halfTime === 1 ? 0 : 45;
+        const minutes = baseMinutes + Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+
+        const halfTimeLimit = matchState.halfTime === 1 ? 45 : 90;
+        if (minutes >= halfTimeLimit && !matchState.isHalfTimeReached) {
+            matchState.elapsedTime = `${String(halfTimeLimit).padStart(2, '0')}:00`;
+            matchState.isHalfTimeReached = true;
+            clearInterval(matchTimer);
+            if (matchState.totalInjurySeconds > 0) {
+                matchState.injuryCountdownSeconds = matchState.totalInjurySeconds;
+                matchTimer = setInterval(updateInjuryCountdown, 1000);
+            } else if (matchState.halfTime === 2) {
+                endMatch();
+            }
+        } else if (!matchState.isHalfTimeReached) {
+            matchState.elapsedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        updateUI();
+    }
+
+    function updateInjuryCountdown() {
+        if (matchState.injuryCountdownSeconds > 0) {
+            matchState.injuryCountdownSeconds--;
+            const minutes = Math.floor(matchState.injuryCountdownSeconds / 60);
+            const seconds = matchState.injuryCountdownSeconds % 60;
+            matchState.currentInjuryTimeDisplay = `+${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            injuryTimeEl.textContent = matchState.currentInjuryTimeDisplay;
+            injuryTimeEl.style.display = 'block';
+            totalInjuryEl.style.display = 'none';
+        } else {
+            clearInterval(matchTimer);
+            if (matchState.halfTime === 1) {
+                alert("First Half Ended");
+                matchState.halfTime = 2;
+                matchState.isMatchStarted = false;
+                matchState.isHalfTimeReached = false;
+                matchState.startTime = null;
+                matchState.elapsedTime = "45:00";
+                matchState.currentInjuryTimeDisplay = "+00:00";
+                updateUI();
+            } else {
+                endMatch();
+            }
+        }
+        updateUI();
     }
 
     function toggleInjuryTime() {
@@ -939,7 +1009,7 @@ document.addEventListener('DOMContentLoaded', function() {
         resetConfirmModal.style.display = 'flex';
     }
 
-   function resetAllData() {
+    function resetAllData() {
         clearInterval(matchTimer);
         clearInterval(injuryTimer);
         matchState = {
@@ -970,11 +1040,13 @@ document.addEventListener('DOMContentLoaded', function() {
             activeSubWindow: {
                 teamA: false,
                 teamB: false
-            }
+            },
+            halfTime: 1,
+            isHalfTimeReached: false,
+            injuryCountdownSeconds: 0
         };
         clearMatchData();
         updateUI();
-     
     }
 
     function endMatch() {
