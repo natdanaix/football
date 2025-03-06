@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM fully loaded and parsed'); // Debug: ตรวจสอบว่า DOM โหลดสมบูรณ์
+
     // Match state
     let matchState = {
         isMatchStarted: false,
@@ -182,8 +184,18 @@ document.addEventListener('DOMContentLoaded', function() {
         goalToEdit: null
     };
 
+    // ตรวจสอบว่า DOM elements ถูกโหลดครบถ้วนหรือไม่
+    if (!startMatchBtn || !matchTimeEl) {
+        console.error('Required DOM elements are missing:', {
+            startMatchBtn: !!startMatchBtn,
+            matchTimeEl: !!matchTimeEl
+        });
+        return;
+    }
+
     // Initialize the page
     function init() {
+        console.log('Initializing app...');
         loadSavedMatchData();
         setupEventListeners();
         initColorPickers();
@@ -196,6 +208,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Set up all event listeners
     function setupEventListeners() {
+        console.log('Setting up event listeners...');
         startMatchBtn.addEventListener('click', startMatch);
         loadMatchBtn.addEventListener('click', loadMatchDataFromFile);
         injuryBtn.addEventListener('click', toggleInjuryTime);
@@ -602,30 +615,45 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function startMatch() {
+        console.log('startMatch called'); // Debug
         matchState.isMatchStarted = true;
         matchState.startTime = new Date();
+        console.log('Match started at:', matchState.startTime); // Debug
         startTimers();
         updateUI();
         saveMatchData();
     }
 
     function startTimers() {
+        console.log('startTimers called'); // Debug
         clearInterval(matchTimer);
         clearInterval(injuryTimer);
-        matchTimer = setInterval(updateMatchTime, 1000);
+        matchTimer = setInterval(() => {
+            updateMatchTime();
+        }, 1000);
+        console.log('matchTimer set:', matchTimer); // Debug
         if (matchState.isInjuryTimeActive && matchState.currentInjuryStartTime) {
             injuryTimer = setInterval(updateInjuryTime, 1000);
+            console.log('injuryTimer set:', injuryTimer); // Debug
         }
     }
 
     function updateMatchTime() {
-        if (!matchState.startTime) return;
+        if (!matchState.startTime) {
+            console.error('startTime is null'); // Debug
+            return;
+        }
         const now = new Date();
         const difference = now - matchState.startTime;
         const minutes = Math.floor(difference / 60000);
         const seconds = Math.floor((difference % 60000) / 1000);
         matchState.elapsedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-        matchTimeEl.textContent = matchState.elapsedTime;
+        console.log('Elapsed Time:', matchState.elapsedTime); // Debug
+        if (matchTimeEl) {
+            matchTimeEl.textContent = matchState.elapsedTime;
+        } else {
+            console.error('matchTimeEl is null'); // Debug
+        }
     }
 
     function toggleInjuryTime() {
@@ -1396,7 +1424,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        // Save the PDF
         doc.save(`Match_Summary_${new Date().toISOString().slice(0,10)}.pdf`);
     }
 
