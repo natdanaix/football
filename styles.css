@@ -264,8 +264,9 @@ header {
 
 /* Action Buttons With 3D Effect */
 .team-actions {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
     margin-bottom: 10px;
     gap: 8px;
 }
@@ -282,6 +283,30 @@ header {
     transform: translateY(-2px);
     box-shadow: var(--button-shadow);
     text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+}
+
+/* Make yellow and red cards fit the top row */
+.yellow-btn, .red-btn {
+    grid-row: 1;
+}
+
+.yellow-btn {
+    grid-column: 1;
+}
+
+.red-btn {
+    grid-column: 2;
+}
+
+/* Make goal and substitution buttons fit the bottom row */
+.goal-btn {
+    grid-row: 2;
+    grid-column: 1 / span 2;
+}
+
+.sub-btn-a, .sub-btn-b {
+    grid-row: 3;
+    grid-column: 1 / span 2;
 }
 
 .action-btn:active {
