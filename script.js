@@ -357,72 +357,71 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.removeItem('matchData');
     }
 
-    function updateUI() {
-        teamAHeader.textContent = matchState.teamA.name;
-        teamAHeader.style.backgroundColor = matchState.teamA.color;
-        teamBHeader.textContent = matchState.teamB.name;
-        teamBHeader.style.backgroundColor = matchState.teamB.color;
-        
-        const teamAScoreEl = document.getElementById('teamAScore');
-        const teamBScoreEl = document.getElementById('teamBScore');
-        teamAScoreEl.textContent = matchState.teamA.goals;
-        teamBScoreEl.textContent = matchState.teamB.goals;
-        
-        teamASubBtn.style.backgroundColor = matchState.teamA.color;
-        teamBSubBtn.style.backgroundColor = matchState.teamB.color;
-        
-        // ควบคุมปุ่ม Half-Time Sub
-        if (!matchState.isMatchStarted && !matchState.isSecondHalf && matchState.firstHalfEndTime) {
-            halfTimeSubTeamABtn.style.display = matchState.teamA.halfTimeSubUsed ? 'none' : 'inline-block';
-            halfTimeSubTeamBBtn.style.display = matchState.teamB.halfTimeSubUsed ? 'none' : 'inline-block';
-        } else {
-            halfTimeSubTeamABtn.style.display = 'none';
-            halfTimeSubTeamBBtn.style.display = 'none';
-        }
-        
-        updateSubstitutionButtonsState();
-        matchTimeEl.textContent = matchState.elapsedTime;
-        
-        if (matchState.isInjuryTimeActive) {
-            injuryTimeEl.textContent = matchState.currentInjuryTimeDisplay;
-            injuryTimeEl.style.display = 'block';
-            totalInjuryEl.style.display = 'none';
-            injuryBtn.classList.add('active');
-            injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Stop Injury Time';
-            injuryFab.classList.add('injury-active');
-            injuryFab.innerHTML = '<i class="fas fa-stopwatch"></i>';
-        } else if (matchState.totalInjurySeconds > 0) {
-            injuryTimeEl.style.display = 'none';
-            totalInjuryEl.textContent = getTotalInjuryTimeDisplay();
-            totalInjuryEl.style.display = 'block';
-            injuryBtn.classList.remove('active');
-            injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Injury Time';
-            injuryFab.classList.remove('injury-active');
-            injuryFab.innerHTML = '<i class="fas fa-stopwatch"></i>';
-        } else {
-            injuryTimeEl.style.display = 'none';
-            totalInjuryEl.style.display = 'none';
-            injuryBtn.classList.remove('active');
-            injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Injury Time';
-            injuryFab.classList.remove('injury-active');
-            injuryFab.innerHTML = '<i class="fas fa-stopwatch"></i>';
-        }
-        
-        if (matchState.isMatchStarted) {
-            matchControlsEl.style.display = 'none';
-            injuryControlsEl.style.display = 'flex';
-            injuryFab.style.display = 'flex';
-            startSecondHalfBtn.style.display = 'none';
-        } else {
-            matchControlsEl.style.display = 'flex';
-            injuryControlsEl.style.display = 'none';
-            injuryFab.style.display = 'none';
-            startSecondHalfBtn.style.display = matchState.isSecondHalf ? 'none' : (matchState.firstHalfEndTime ? 'block' : 'none');
-        }
-        
-        renderTeamCards();
-        renderTeamSubstitutions();
+   function updateUI() {
+    teamAHeader.textContent = matchState.teamA.name;
+    teamAHeader.style.backgroundColor = matchState.teamA.color;
+    teamBHeader.textContent = matchState.teamB.name;
+    teamBHeader.style.backgroundColor = matchState.teamB.color;
+    
+    const teamAScoreEl = document.getElementById('teamAScore');
+    const teamBScoreEl = document.getElementById('teamBScore');
+    teamAScoreEl.textContent = matchState.teamA.goals;
+    teamBScoreEl.textContent = matchState.teamB.goals;
+    
+    teamASubBtn.style.backgroundColor = matchState.teamA.color;
+    teamBSubBtn.style.backgroundColor = matchState.teamB.color;
+    
+    if (!matchState.isMatchStarted && !matchState.isSecondHalf && matchState.firstHalfEndTime) {
+        halfTimeSubTeamABtn.style.display = matchState.teamA.halfTimeSubUsed ? 'none' : 'inline-block';
+        halfTimeSubTeamBBtn.style.display = matchState.teamB.halfTimeSubUsed ? 'none' : 'inline-block';
+    } else {
+        halfTimeSubTeamABtn.style.display = 'none';
+        halfTimeSubTeamBBtn.style.display = 'none';
     }
+    
+    updateSubstitutionButtonsState();
+    matchTimeEl.textContent = matchState.elapsedTime;
+    
+    if (matchState.isInjuryTimeActive) {
+        injuryTimeEl.innerHTML = matchState.currentInjuryTimeDisplay;
+        injuryTimeEl.style.display = 'inline-flex';
+        totalInjuryEl.style.display = 'none';
+        injuryBtn.classList.add('active');
+        injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Stop Injury Time';
+        injuryFab.classList.add('injury-active');
+        injuryFab.innerHTML = '<i class="fas fa-stopwatch"></i>';
+    } else if (matchState.totalInjurySeconds > 0) {
+        injuryTimeEl.style.display = 'none';
+        totalInjuryEl.textContent = getTotalInjuryTimeDisplay();
+        totalInjuryEl.style.display = 'block';
+        injuryBtn.classList.remove('active');
+        injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Injury Time';
+        injuryFab.classList.remove('injury-active');
+        injuryFab.innerHTML = '<i class="fas fa-stopwatch"></i>';
+    } else {
+        injuryTimeEl.style.display = 'none';
+        totalInjuryEl.style.display = 'none';
+        injuryBtn.classList.remove('active');
+        injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Injury Time';
+        injuryFab.classList.remove('injury-active');
+        injuryFab.innerHTML = '<i class="fas fa-stopwatch"></i>';
+    }
+    
+    if (matchState.isMatchStarted) {
+        matchControlsEl.style.display = 'none';
+        injuryControlsEl.style.display = 'flex';
+        injuryFab.style.display = 'flex';
+        startSecondHalfBtn.style.display = 'none';
+    } else {
+        matchControlsEl.style.display = 'flex';
+        injuryControlsEl.style.display = 'none';
+        injuryFab.style.display = 'none';
+        startSecondHalfBtn.style.display = matchState.isSecondHalf ? 'none' : (matchState.firstHalfEndTime ? 'block' : 'none');
+    }
+    
+    renderTeamCards();
+    renderTeamSubstitutions();
+}
 
     function updateSubstitutionButtonsState() {
         if (matchState.isMatchStarted) {
@@ -588,97 +587,104 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function updateMatchTime() {
-        if (!matchState.startTime) return;
-        const now = new Date();
-        const difference = now - matchState.startTime;
-        const totalSeconds = Math.floor(difference / 1000);
-        let baseMinutes = matchState.isSecondHalf ? 45 : 0;
-        const maxMinutes = matchState.isSecondHalf ? 90 : 45;
-        const regularMinutes = Math.min(maxMinutes, baseMinutes + Math.floor(totalSeconds / 60));
-        const regularSeconds = totalSeconds % 60;
-        matchState.elapsedTime = `${String(regularMinutes).padStart(2, '0')}:${String(regularSeconds).padStart(2, '0')}`;
+   function updateMatchTime() {
+    if (!matchState.startTime) return;
+    const now = new Date();
+    const difference = now - matchState.startTime;
+    const totalSeconds = Math.floor(difference / 1000);
+    let baseMinutes = matchState.isSecondHalf ? 45 : 0;
+    const maxMinutes = matchState.isSecondHalf ? 90 : 45;
+    const regularMinutes = Math.min(maxMinutes, baseMinutes + Math.floor(totalSeconds / 60));
+    const regularSeconds = totalSeconds % 60;
+    matchState.elapsedTime = `${String(regularMinutes).padStart(2, '0')}:${String(regularSeconds).padStart(2, '0')}`;
+    
+    const maxTimeSeconds = (matchState.isSecondHalf ? 90 : 45) * 60;
+    if (totalSeconds >= maxTimeSeconds && matchState.totalInjurySeconds > 0) {
+        const elapsedSinceMax = totalSeconds - maxTimeSeconds;
+        const remainingInjurySeconds = Math.max(0, matchState.totalInjurySeconds - elapsedSinceMax);
+        const injuryMinutes = Math.floor(remainingInjurySeconds / 60);
+        const injurySeconds = remainingInjurySeconds % 60;
+        const countdownDisplay = `<i class="fas fa-stopwatch"></i> +${String(injuryMinutes).padStart(2, '0')}:${String(injurySeconds).padStart(2, '0')}`;
         
-        const maxTimeSeconds = (matchState.isSecondHalf ? 90 : 45) * 60;
-        if (totalSeconds >= maxTimeSeconds && matchState.totalInjurySeconds > 0) {
-            const elapsedSinceMax = totalSeconds - maxTimeSeconds;
-            const remainingInjurySeconds = Math.max(0, matchState.totalInjurySeconds - elapsedSinceMax);
-            const injuryMinutes = Math.floor(remainingInjurySeconds / 60);
-            const injurySeconds = remainingInjurySeconds % 60;
-            const countdownDisplay = `+${String(injuryMinutes).padStart(2, '0')}:${String(injurySeconds).padStart(2, '0')}`;
-            
-            injuryTimeEl.textContent = countdownDisplay;
-            injuryTimeEl.style.display = 'block';
-            injuryTimeEl.style.color = '#D32F2F';
-            injuryTimeEl.style.backgroundColor = 'transparent';
-            injuryTimeEl.style.visibility = 'visible';
-            injuryTimeEl.style.opacity = '1';
-            totalInjuryEl.style.display = 'none';
-            
-            if (remainingInjurySeconds === 0) {
-                if (matchState.isInjuryTimeActive) toggleInjuryTime();
-                endMatch();
-            }
-        } else {
-            matchTimeEl.textContent = matchState.elapsedTime;
-            injuryTimeEl.style.color = 'white';
-            if (!matchState.isInjuryTimeActive) {
-                injuryTimeEl.style.display = 'none';
-                if (matchState.totalInjurySeconds > 0) {
-                    totalInjuryEl.textContent = getTotalInjuryTimeDisplay();
-                    totalInjuryEl.style.display = 'block';
-                } else {
-                    totalInjuryEl.style.display = 'none';
-                }
+        injuryTimeEl.innerHTML = countdownDisplay;
+        injuryTimeEl.style.display = 'inline-flex';
+        injuryTimeEl.style.color = '#D32F2F';
+        totalInjuryEl.style.display = 'none';
+        
+        if (remainingInjurySeconds === 0) {
+            if (matchState.isInjuryTimeActive) toggleInjuryTime();
+            endMatch();
+        }
+    } else {
+        matchTimeEl.textContent = matchState.elapsedTime;
+        if (!matchState.isInjuryTimeActive) {
+            injuryTimeEl.style.display = 'none';
+            if (matchState.totalInjurySeconds > 0) {
+                totalInjuryEl.textContent = getTotalInjuryTimeDisplay();
+                totalInjuryEl.style.display = 'block';
+            } else {
+                totalInjuryEl.style.display = 'none';
             }
         }
     }
+}
 
-    function toggleInjuryTime() {
-        if (!matchState.isMatchStarted) {
-            alert('Please start the match first');
-            return;
-        }
-        
-        matchState.isInjuryTimeActive = !matchState.isInjuryTimeActive;
-        
-        if (matchState.isInjuryTimeActive) {
-            matchState.currentInjuryStartTime = new Date();
-            injuryTimer = setInterval(updateInjuryTime, 1000);
-            injuryTimeEl.style.display = 'block';
-            totalInjuryEl.style.display = 'none';
-            injuryBtn.classList.add('active');
-            injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Stop Injury Time';
-            injuryFab.classList.add('injury-active');
-        } else {
-            if (matchState.currentInjuryStartTime) {
-                const now = new Date();
-                const injuryDuration = now - matchState.currentInjuryStartTime;
-                const injurySeconds = Math.floor(injuryDuration / 1000);
-                matchState.totalInjurySeconds += injurySeconds;
-                const mins = String(Math.floor(injurySeconds / 60)).padStart(2, '0');
-                const secs = String(injurySeconds % 60).padStart(2, '0');
-                matchState.injuryTimePeriods.push(`+${mins}:${secs}`);
-                showInjuryTimeSummary(injurySeconds);
-            }
-            clearInterval(injuryTimer);
-            matchState.currentInjuryStartTime = null;
-            matchState.currentInjuryTimeDisplay = '+00:00';
-            updateUI();
-        }
-        
-        saveMatchData();
+   function toggleInjuryTime() {
+    if (!matchState.isMatchStarted) {
+        alert('Please start the match first');
+        return;
     }
+    
+    matchState.isInjuryTimeActive = !matchState.isInjuryTimeActive;
+    
+    if (matchState.isInjuryTimeActive) {
+        matchState.currentInjuryStartTime = new Date();
+        matchState.currentInjuryTimeDisplay = '<i class="fas fa-stopwatch"></i> +00:00'; // ตั้งค่าเริ่มต้นทันที
+        injuryTimeEl.innerHTML = matchState.currentInjuryTimeDisplay;
+        injuryTimeEl.style.display = 'inline-flex'; // แสดงทันที
+        totalInjuryEl.style.display = 'none';
+        injuryTimer = setInterval(updateInjuryTime, 1000);
+        injuryBtn.classList.add('active');
+        injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Stop Injury Time';
+        injuryFab.classList.add('injury-active');
+    } else {
+        if (matchState.currentInjuryStartTime) {
+            const now = new Date();
+            const injuryDuration = now - matchState.currentInjuryStartTime;
+            const injurySeconds = Math.floor(injuryDuration / 1000);
+            matchState.totalInjurySeconds += injurySeconds;
+            const mins = String(Math.floor(injurySeconds / 60)).padStart(2, '0');
+            const secs = String(injurySeconds % 60).padStart(2, '0');
+            matchState.injuryTimePeriods.push(`+${mins}:${secs}`);
+            showInjuryTimeSummary(injurySeconds);
+        }
+        clearInterval(injuryTimer);
+        matchState.currentInjuryStartTime = null;
+        matchState.currentInjuryTimeDisplay = '<i class="fas fa-stopwatch"></i> +00:00';
+        injuryTimeEl.style.display = 'none';
+        if (matchState.totalInjurySeconds > 0) {
+            totalInjuryEl.textContent = getTotalInjuryTimeDisplay();
+            totalInjuryEl.style.display = 'block';
+        }
+        injuryBtn.classList.remove('active');
+        injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Injury Time';
+        injuryFab.classList.remove('injury-active');
+    }
+    
+    updateUI();
+    saveMatchData();
+}
 
-    function updateInjuryTime() {
-        if (!matchState.currentInjuryStartTime) return;
-        const now = new Date();
-        const difference = now - matchState.currentInjuryStartTime;
-        const minutes = Math.floor(difference / 60000);
-        const seconds = Math.floor((difference % 60000) / 1000);
-        matchState.currentInjuryTimeDisplay = `+${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-        injuryTimeEl.textContent = matchState.currentInjuryTimeDisplay;
-    }
+   function updateInjuryTime() {
+    if (!matchState.currentInjuryStartTime) return;
+    const now = new Date();
+    const difference = now - matchState.currentInjuryStartTime;
+    const minutes = Math.floor(difference / 60000);
+    const seconds = Math.floor((difference % 60000) / 1000);
+    matchState.currentInjuryTimeDisplay = `<i class="fas fa-stopwatch"></i> +${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    injuryTimeEl.innerHTML = matchState.currentInjuryTimeDisplay;
+    injuryTimeEl.style.display = 'inline-flex';
+}
 
     function getTotalInjuryTimeDisplay() {
         const minutes = Math.floor(matchState.totalInjurySeconds / 60);
