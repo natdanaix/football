@@ -10,192 +10,210 @@
 <body>
     <div class="container">
         <header>
-            <h1>Football Tracker</h1>
-            <div id="settingsBtn" class="settings-btn"><i class="fas fa-cog"></i></div>
+            <div class="header-content">
+                <span class="logo">Football Tracker</span>
+                <button id="settingsBtn" class="settings-btn"><i class="fas fa-cog"></i></button>
+            </div>
+            <div class="timer-container">
+                <div id="teamAScore" class="team-score">0</div>
+                <div id="matchTime" class="match-time">00:00</div>
+                <div id="teamBScore" class="team-score">0</div>
+                <div id="injuryTime" class="injury-time" style="display: none;">+00:00</div>
+                <div id="totalInjury" class="total-injury" style="display: none;"></div>
+            </div>
         </header>
 
-        <div class="time-display">
-            <div class="time-container">
-                <span id="matchTimeIcon"><i class="fas fa-clock"></i></span>
-                <div id="matchTime">00:00</div>
-                <div id="injuryTime" style="display: none;"><i class="fas fa-stopwatch"></i> +00:00</div>
-            </div>
-            <div id="totalInjury" style="display: none;"></div>
-        </div>
-
         <div class="teams-container">
-            <div class="team-section">
+            <div class="team-panel team-a">
                 <div class="team-header" id="teamAHeader">Team A</div>
-                <div class="team-score" id="teamAScore">0</div>
-                <div class="team-controls" id="teamAControls">
-                    <button class="control-btn" id="teamAYellowBtn"><i class="fas fa-square yellow-icon"></i> Yellow Card</button>
-                    <button class="control-btn" id="teamARedBtn"><i class="fas fa-square red-icon"></i> Red Card</button>
-                    <button class="control-btn sub-btn" id="teamASubBtn"><i class="fas fa-exchange-alt"></i> Substitution</button>
-                    <button class="control-btn sub-btn" id="halfTimeSubTeamABtn" style="display: none;"><i class="fas fa-exchange-alt"></i> Half-Time Sub</button>
-                    <button class="control-btn" id="teamAGoalBtn"><i class="fas fa-futbol"></i> Goal</button>
+                <div class="team-actions" id="teamAControls">
+                    <button class="action-btn yellow-btn" id="teamAYellowBtn"><i class="fas fa-square yellow-icon"></i>Yellow Card</button>
+                    <button class="action-btn red-btn" id="teamARedBtn"><i class="fas fa-square red-icon"></i>Red Card</button>
+                    <button class="action-btn goal-btn" id="teamAGoalBtn"><i class="fas fa-futbol"></i>Goal</button>
+                    <button class="action-btn sub-btn-a" id="teamASubBtn"><i class="fas fa-exchange-alt"></i>Substitution</button>
+                    <button class="action-btn sub-btn-a" id="halfTimeSubTeamABtn" style="display: none;"><i class="fas fa-exchange-alt"></i>Half-Time Sub</button>
                 </div>
-                <div class="tabs">
-                    <div class="tab active" data-team="a" data-tab="cards">Cards</div>
-                    <div class="tab" data-team="a" data-tab="subs">Substitutions</div>
-                </div>
-                <div class="content-container">
-                    <div id="teamACardsEmpty" class="empty-state active">No cards yet</div>
-                    <div id="teamACardsContent" class="content active"></div>
-                    <div id="teamASubsEmpty" class="empty-state">No substitutions yet</div>
-                    <div id="teamASubsContent" class="content"></div>
+                <div class="team-content">
+                    <div class="tab-container">
+                        <div class="tabs">
+                            <div class="tab active" data-team="a" data-tab="cards">Cards</div>
+                            <div class="tab" data-team="a" data-tab="subs">Substitutions</div>
+                        </div>
+                        <div class="tab-content active" id="teamACardsContent"></div>
+                        <div class="tab-content" id="teamASubsContent"></div>
+                        <div id="teamACardsEmpty" class="empty-state active"><i class="fas fa-exclamation-circle empty-icon"></i>No cards yet</div>
+                        <div id="teamASubsEmpty" class="empty-state"><i class="fas fa-exchange-alt empty-icon"></i>No substitutions yet</div>
+                    </div>
                 </div>
             </div>
 
-            <div class="team-section">
+            <div class="divider"></div>
+
+            <div class="team-panel team-b">
                 <div class="team-header" id="teamBHeader">Team B</div>
-                <div class="team-score" id="teamBScore">0</div>
-                <div class="team-controls" id="teamBControls">
-                    <button class="control-btn" id="teamBYellowBtn"><i class="fas fa-square yellow-icon"></i> Yellow Card</button>
-                    <button class="control-btn" id="teamBRedBtn"><i class="fas fa-square red-icon"></i> Red Card</button>
-                    <button class="control-btn sub-btn" id="teamBSubBtn"><i class="fas fa-exchange-alt"></i> Substitution</button>
-                    <button class="control-btn sub-btn" id="halfTimeSubTeamBBtn" style="display: none;"><i class="fas fa-exchange-alt"></i> Half-Time Sub</button>
-                    <button class="control-btn" id="teamBGoalBtn"><i class="fas fa-futbol"></i> Goal</button>
+                <div class="team-actions" id="teamBControls">
+                    <button class="action-btn yellow-btn" id="teamBYellowBtn"><i class="fas fa-square yellow-icon"></i>Yellow Card</button>
+                    <button class="action-btn red-btn" id="teamBRedBtn"><i class="fas fa-square red-icon"></i>Red Card</button>
+                    <button class="action-btn goal-btn" id="teamBGoalBtn"><i class="fas fa-futbol"></i>Goal</button>
+                    <button class="action-btn sub-btn-b" id="teamBSubBtn"><i class="fas fa-exchange-alt"></i>Substitution</button>
+                    <button class="action-btn sub-btn-b" id="halfTimeSubTeamBBtn" style="display: none;"><i class="fas fa-exchange-alt"></i>Half-Time Sub</button>
                 </div>
-                <div class="tabs">
-                    <div class="tab active" data-team="b" data-tab="cards">Cards</div>
-                    <div class="tab" data-team="b" data-tab="subs">Substitutions</div>
-                </div>
-                <div class="content-container">
-                    <div id="teamBCardsEmpty" class="empty-state active">No cards yet</div>
-                    <div id="teamBCardsContent" class="content active"></div>
-                    <div id="teamBSubsEmpty" class="empty-state">No substitutions yet</div>
-                    <div id="teamBSubsContent" class="content"></div>
+                <div class="team-content">
+                    <div class="tab-container">
+                        <div class="tabs">
+                            <div class="tab active" data-team="b" data-tab="cards">Cards</div>
+                            <div class="tab" data-team="b" data-tab="subs">Substitutions</div>
+                        </div>
+                        <div class="tab-content active" id="teamBCardsContent"></div>
+                        <div class="tab-content" id="teamBSubsContent"></div>
+                        <div id="teamBCardsEmpty" class="empty-state active"><i class="fas fa-exclamation-circle empty-icon"></i>No cards yet</div>
+                        <div id="teamBSubsEmpty" class="empty-state"><i class="fas fa-exchange-alt empty-icon"></i>No substitutions yet</div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="match-controls" id="matchControls">
-            <button class="control-btn" id="startMatchBtn"><i class="fas fa-play"></i> Start Match</button>
-            <button class="control-btn" id="startSecondHalfBtn" style="display: none;"><i class="fas fa-play"></i> Start Second Half</button>
-            <button class="control-btn" id="endMatchBtn"><i class="fas fa-stop"></i> End Match</button>
-            <button class="control-btn" id="resetDataBtn"><i class="fas fa-undo"></i> Reset Data</button>
+            <button class="control-btn start-btn" id="startMatchBtn"><i class="fas fa-play"></i>Start Match</button>
+            <button class="control-btn start-btn" id="startSecondHalfBtn" style="display: none;"><i class="fas fa-play"></i>Start Second Half</button>
+            <button class="control-btn reset-btn" id="endMatchBtn"><i class="fas fa-stop"></i>End Match</button>
+            <button class="control-btn reset-btn" id="resetDataBtn"><i class="fas fa-undo"></i>Reset Data</button>
         </div>
 
-        <div class="injury-controls" id="injuryControls" style="display: none;">
-            <button class="control-btn" id="injuryBtn"><i class="fas fa-stopwatch"></i> Injury Time</button>
+        <div class="match-controls" id="injuryControls" style="display: none;">
+            <button class="control-btn injury-btn" id="injuryBtn"><i class="fas fa-stopwatch"></i>Injury Time</button>
         </div>
 
-        <div class="fab" id="injuryFab" style="display: none;"><i class="fas fa-stopwatch"></i></div>
+        <button class="fab" id="injuryFab" style="display: none;"><i class="fas fa-stopwatch"></i></button>
 
         <!-- Modals -->
         <div id="teamSettingsModal" class="modal" style="display: none;">
             <div class="modal-content">
-                <h2>Team Settings</h2>
-                <div class="input-group">
-                    <label>Team A Name</label>
-                    <input type="text" id="teamANameInput">
+                <div class="modal-header">
+                    <span class="modal-title">Team Settings</span>
+                    <button class="close-btn" id="closeTeamSettingsBtn">×</button>
                 </div>
                 <div class="input-group">
-                    <label>Team B Name</label>
-                    <input type="text" id="teamBNameInput">
+                    <label class="input-label">Team A Name</label>
+                    <input type="text" id="teamANameInput" class="input-field">
                 </div>
                 <div class="input-group">
-                    <label>Team A Color</label>
+                    <label class="input-label">Team B Name</label>
+                    <input type="text" id="teamBNameInput" class="input-field">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Team A Color</label>
                     <div id="teamAColorPicker" class="color-picker"></div>
                 </div>
                 <div class="input-group">
-                    <label>Team B Color</label>
+                    <label class="input-label">Team B Color</label>
                     <div id="teamBColorPicker" class="color-picker"></div>
                 </div>
                 <div class="modal-actions">
-                    <button class="modal-btn" id="saveTeamSettingsBtn">Save</button>
+                    <button class="modal-btn confirm-btn" id="saveTeamSettingsBtn">Save</button>
                     <button class="modal-btn cancel-btn" id="cancelTeamSettingsBtn">Cancel</button>
                 </div>
             </div>
-            <span class="close-btn" id="closeTeamSettingsBtn">×</span>
         </div>
 
         <div id="cardModal" class="modal" style="display: none;">
             <div class="modal-content">
-                <h2 id="cardModalTitle">Card Event</h2>
+                <div class="modal-header">
+                    <span class="modal-title" id="cardModalTitle">Card Event</span>
+                    <button class="close-btn" id="closeCardModalBtn">×</button>
+                </div>
                 <div class="input-group">
-                    <label>Player Number</label>
-                    <input type="number" id="playerNumberInput" min="1">
+                    <label class="input-label">Player Number</label>
+                    <input type="number" id="playerNumberInput" class="input-field" min="1">
                 </div>
                 <div class="modal-actions" id="cardModalActions">
-                    <button class="modal-btn" id="saveCardBtn">Save</button>
+                    <button class="modal-btn confirm-btn" id="saveCardBtn">Save</button>
                     <button class="modal-btn cancel-btn" id="cancelCardBtn">Cancel</button>
                 </div>
             </div>
-            <span class="close-btn" id="closeCardModalBtn">×</span>
         </div>
 
         <div id="subModalA" class="modal" style="display: none;">
             <div class="modal-content">
-                <h2 id="subModalTitleA">Substitution - Team A</h2>
-                <div class="input-group">
-                    <label>Player In Number</label>
-                    <input type="number" id="playerInNumberA" min="1">
+                <div class="modal-header">
+                    <span class="modal-title" id="subModalTitleA">Substitution - Team A</span>
+                    <button class="close-btn" id="closeSubModalABtn">×</button>
                 </div>
                 <div class="input-group">
-                    <label>Player Out Number</label>
-                    <input type="number" id="playerOutNumberA" min="1">
+                    <label class="input-label">Player In Number</label>
+                    <input type="number" id="playerInNumberA" class="input-field" min="1">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Player Out Number</label>
+                    <input type="number" id="playerOutNumberA" class="input-field" min="1">
                 </div>
                 <div class="modal-actions">
-                    <button class="modal-btn" id="addSubBtnA">Add</button>
+                    <button class="modal-btn confirm-btn" id="addSubBtnA">Add</button>
                     <button class="modal-btn cancel-btn" id="cancelSubBtnA">Cancel</button>
                 </div>
             </div>
-            <span class="close-btn" id="closeSubModalABtn">×</span>
         </div>
 
         <div id="subModalB" class="modal" style="display: none;">
             <div class="modal-content">
-                <h2 id="subModalTitleB">Substitution - Team B</h2>
-                <div class="input-group">
-                    <label>Player In Number</label>
-                    <input type="number" id="playerInNumberB" min="1">
+                <div class="modal-header">
+                    <span class="modal-title" id="subModalTitleB">Substitution - Team B</span>
+                    <button class="close-btn" id="closeSubModalBBtn">×</button>
                 </div>
                 <div class="input-group">
-                    <label>Player Out Number</label>
-                    <input type="number" id="playerOutNumberB" min="1">
+                    <label class="input-label">Player In Number</label>
+                    <input type="number" id="playerInNumberB" class="input-field" min="1">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Player Out Number</label>
+                    <input type="number" id="playerOutNumberB" class="input-field" min="1">
                 </div>
                 <div class="modal-actions">
-                    <button class="modal-btn" id="addSubBtnB">Add</button>
+                    <button class="modal-btn confirm-btn" id="addSubBtnB">Add</button>
                     <button class="modal-btn cancel-btn" id="cancelSubBtnB">Cancel</button>
                 </div>
             </div>
-            <span class="close-btn" id="closeSubModalBBtn">×</span>
         </div>
 
         <div id="injurySummaryModal" class="modal" style="display: none;">
             <div class="modal-content">
-                <h2>Injury Time Summary</h2>
-                <div id="injurySummaryContent"></div>
+                <div class="modal-header">
+                    <span class="modal-title">Injury Time Summary</span>
+                    <button class="close-btn" id="closeInjurySummaryBtn">×</button>
+                </div>
+                <div id="injurySummaryContent" class="summary-container"></div>
                 <div class="modal-actions">
-                    <button class="modal-btn" id="closeInjurySummaryConfirmBtn">OK</button>
+                    <button class="modal-btn confirm-btn" id="closeInjurySummaryConfirmBtn">OK</button>
                 </div>
             </div>
-            <span class="close-btn" id="closeInjurySummaryBtn">×</span>
         </div>
 
         <div id="resetConfirmModal" class="modal" style="display: none;">
             <div class="modal-content">
-                <h2>Reset Confirmation</h2>
+                <div class="modal-header">
+                    <span class="modal-title">Reset Confirmation</span>
+                    <button class="close-btn" id="closeResetConfirmBtn">×</button>
+                </div>
                 <p>Are you sure you want to reset all match data?</p>
                 <div class="modal-actions">
-                    <button class="modal-btn" id="confirmResetBtn">Yes</button>
+                    <button class="modal-btn confirm-btn" id="confirmResetBtn">Yes</button>
                     <button class="modal-btn cancel-btn" id="cancelResetBtn">No</button>
                 </div>
             </div>
-            <span class="close-btn" id="closeResetConfirmBtn">×</span>
         </div>
 
         <div id="matchSummaryModal" class="modal" style="display: none;">
             <div class="modal-content">
-                <h2>Match Summary</h2>
-                <div id="matchSummaryContent"></div>
+                <div class="modal-header">
+                    <span class="modal-title">Match Summary</span>
+                    <button class="close-btn" id="closeMatchSummaryBtn">×</button>
+                </div>
+                <div id="matchSummaryContent" class="summary-container"></div>
                 <div class="modal-actions">
-                    <button class="modal-btn" id="saveAsPdfBtn">Save as PDF</button>
-                    <button class="modal-btn" id="closeMatchSummaryConfirmBtn">Close & Reset</button>
+                    <button class="modal-btn confirm-btn" id="saveAsPdfBtn">Save as PDF</button>
+                    <button class="modal-btn confirm-btn" id="closeMatchSummaryConfirmBtn">Close & Reset</button>
                 </div>
             </div>
-            <span class="close-btn" id="closeMatchSummaryBtn">×</span>
         </div>
     </div>
 
