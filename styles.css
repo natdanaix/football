@@ -1,199 +1,481 @@
-body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f0f0f0;
+/* Enhanced styles with 3D buttons and vertical cards */
+:root {
+    --team-a-color: #1976D2;
+    --team-a-dark: #0D47A1;
+    --team-a-light: #E3F2FD;
+    --team-b-color: #D32F2F;
+    --team-b-dark: #B71C1C;
+    --team-b-light: #FFEBEE;
+    --neutral-bg: #F5F5F5;
+    --yellow-card: #FFC107;
+    --yellow-card-dark: #FFA000;
+    --red-card: #D32F2F;
+    --red-card-dark: #B71C1C;
+    --goal-color: #4CAF50;
+    --goal-color-dark: #2E7D32;
+    --text-primary: #212121;
+    --text-secondary: #757575;
+    --text-light: #FFFFFF;
+    --border-color: #E0E0E0;
+    --button-shadow: 0 4px 0 rgba(0,0,0,0.2);
+    --button-pressed-shadow: 0 2px 0 rgba(0,0,0,0.2);
+}
+
+* {
     margin: 0;
-    padding: 20px;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: var(--neutral-bg);
+    color: var(--text-primary);
+    font-size: 16px;
+    line-height: 1.5;
+    width: 100%;
+    overflow-x: hidden;
 }
 
 .container {
-    max-width: 1200px;
+    width: 100%;
+    max-width: 1200px; /* จำกัดความกว้างสูงสุด */
     margin: 0 auto;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 10px; /* เพิ่ม padding สำหรับขอบจอเล็ก */
 }
 
 header {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://competition.tl.prod.c0d1um.io/media/tournament/thaileague_header_logo/20240804-190803-88871be9-d119-4e5e-9a9b-25574adf587e.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    min-height: 100px; /* ลดความสูงสำหรับจอเล็ก */
+}
+
+.header-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    padding: 0 10px;
 }
 
-h1 {
-    margin: 0;
-    font-size: 24px;
+.logo {
+    font-size: 1.2rem; /* ปรับขนาดตามหน้าจอ */
+    font-weight: bold;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
 }
 
 .settings-btn {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    font-size: 1.1rem;
     cursor: pointer;
-    font-size: 20px;
-    color: #333;
-}
-
-.time-display {
-    text-align: center;
-    margin-bottom: 20px;
-    padding: 15px;
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.time-container {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    transition: all 0.3s ease;
 }
 
-#matchTimeIcon {
-    font-size: 28px;
-    color: #333;
+.settings-btn:hover {
+    background: rgba(255,255,255,0.3);
+    transform: rotate(30deg);
 }
 
-#matchTime {
-    font-size: 48px;
-    font-weight: bold;
-    color: #1976D2;
-}
-
-#injuryTime {
-    font-size: 28px;
-    color: #D32F2F;
-    font-weight: bold;
-    padding: 5px 10px;
-    border-radius: 5px;
-    background: rgba(211, 47, 47, 0.1);
-    animation: pulse 1s infinite alternate;
-}
-
-@keyframes pulse {
-    from { transform: scale(1); }
-    to { transform: scale(1.05); }
-}
-
-#totalInjury {
-    font-size: 20px;
-    color: #666;
-    margin-top: 5px;
-}
-
-.teams-container {
+.timer-container {
     display: flex;
     justify-content: center;
-    margin-bottom: 20px;
+    align-items: center;
+    margin-top: 10px;
+    padding: 0 10px;
+    flex-wrap: wrap;
+    gap: 10px; /* ลด gap สำหรับจอเล็ก */
 }
 
-.team-column {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    width: 100%;
-    max-width: 600px;
-}
-
-.team-section {
-    background: #fafafa;
-    padding: 15px;
-    border-radius: 5px;
-    width: 100%;
-}
-
-.team-header {
-    text-align: center;
-    padding: 10px;
+.match-time {
+    background-color: #0D47A1;
     color: white;
-    font-size: 18px;
-    border-radius: 5px;
-    margin-bottom: 10px;
+    font-size: 1.3rem; /* ปรับขนาดตามหน้าจอ */
+    font-weight: bold;
+    padding: 6px 12px;
+    border-radius: 10px;
+    order: 2;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
 }
 
 .team-score {
+    background-color: #FFFFFF;
+    color: var(--text-primary);
+    font-size: 1.3rem;
+    font-weight: bold;
+    padding: 4px 10px;
+    border-radius: 10px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    min-width: 35px;
     text-align: center;
-    font-size: 36px;
-    margin: 10px 0;
 }
 
-.team-controls {
+#teamAScore {
+    order: 1;
+}
+
+#teamBScore {
+    order: 3;
+}
+
+.injury-time {
+    background-color: #D32F2F;
+    color: white;
+    font-size: 1rem;
+    font-weight: bold;
+    padding: 4px 10px;
+    border-radius: 10px;
+    order: 4;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+}
+
+.total-injury {
+    background-color: #FF9800;
+    color: white;
+    font-size: 1rem;
+    font-weight: bold;
+    padding: 4px 10px;
+    border-radius: 10px;
+    order: 5;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+}
+
+.match-controls {
     display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
     justify-content: center;
-    margin-bottom: 15px;
+    padding: 10px;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    gap: 10px;
+    flex-wrap: wrap; /* ให้ปุ่มเรียงลงเมื่อจอแคบ */
 }
 
+/* 3D Buttons Styling */
 .control-btn {
     padding: 10px 15px;
-    font-size: 14px;
     border: none;
-    border-radius: 5px;
+    border-radius: 6px;
+    font-weight: bold;
     cursor: pointer;
-    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: auto;
+    justify-content: center;
+    position: relative;
+    transition: all 0.1s ease;
+    transform: translateY(-2px);
+    box-shadow: var(--button-shadow);
 }
 
-.control-btn:hover {
-    opacity: 0.8;
+.control-btn:active {
+    transform: translateY(0);
+    box-shadow: var(--button-pressed-shadow);
 }
 
-.sub-btn {
+.start-btn {
     background-color: #4CAF50;
     color: white;
     border-bottom: 4px solid #2E7D32;
 }
 
-.yellow-icon { color: #FFC107; }
-.red-icon { color: #D32F2F; }
-.goal-icon { color: #4CAF50; }
+.start-btn:active {
+    border-bottom-width: 2px;
+}
+
+.reset-btn {
+    background-color: #D32F2F;
+    color: white;
+    border-bottom: 4px solid #B71C1C;
+}
+
+.reset-btn:active {
+    border-bottom-width: 2px;
+}
+
+.injury-btn {
+    background-color: #4CAF50;
+    color: white;
+    border-bottom: 4px solid #2E7D32;
+}
+
+.injury-btn:active {
+    border-bottom-width: 2px;
+}
+
+.injury-btn.active {
+    background-color: #D32F2F;
+    border-bottom: 4px solid #B71C1C;
+}
+
+.teams-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 15px;
+    flex-wrap: wrap; /* ให้ Team A และ B เรียงลงเมื่อจอแคบ */
+}
+
+.team-panel {
+    flex: 1;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    min-width: 300px; /* ขนาดขั้นต่ำสำหรับจอเล็ก */
+}
+
+.team-a {
+    background-color: var(--team-a-light);
+}
+
+.team-b {
+    background-color: var(--team-b-light);
+}
+
+.team-header {
+    padding: 10px;
+    text-align: center;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    font-weight: bold;
+    color: white;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    font-size: 1.1rem;
+}
+
+.team-a .team-header {
+    background-color: var(--team-a-color);
+}
+
+.team-b .team-header {
+    background-color: var(--team-b-color);
+}
+
+/* Action Buttons With 3D Effect */
+.team-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    margin-bottom: 10px;
+    gap: 8px;
+}
+
+.action-btn {
+    padding: 8px 0;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 0.85rem;
+    position: relative;
+    transition: all 0.1s ease;
+    transform: translateY(-2px);
+    box-shadow: var(--button-shadow);
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+}
+
+/* Make yellow and red cards fit the top row with increased height */
+.yellow-btn, .red-btn {
+    grid-row: 1;
+    height: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Add card icon visual indicator */
+.yellow-btn::before, .red-btn::before {
+    content: "";
+    display: block;
+    width: 20px;
+    height: 30px;
+    margin-bottom: 5px;
+    border-radius: 3px;
+}
+
+.yellow-btn::before {
+    background-color: var(--yellow-card-dark);
+    grid-column: 1;
+}
+
+.red-btn::before {
+    background-color: var(--red-card-dark);
+    grid-column: 2;
+}
+
+/* Make goal and substitution buttons fit the bottom row */
+.goal-btn {
+    grid-row: 2;
+    grid-column: 1 / span 2;
+    height: 45px;
+}
+
+.sub-btn-a, .sub-btn-b {
+    grid-row: 3;
+    grid-column: 1 / span 2;
+    height: 45px;
+}
+
+.action-btn:active {
+    transform: translateY(0);
+    box-shadow: var(--button-pressed-shadow);
+}
+
+.yellow-btn {
+    background-color: var(--yellow-card);
+    color: var(--text-primary);
+    border-bottom: 4px solid var(--yellow-card-dark);
+}
+
+.yellow-btn:active {
+    border-bottom-width: 2px;
+}
+
+.red-btn {
+    background-color: var(--red-card);
+    color: white;
+    border-bottom: 4px solid var(--red-card-dark);
+}
+
+.red-btn:active {
+    border-bottom-width: 2px;
+}
+
+.goal-btn {
+    background-color: var(--goal-color);
+    color: white;
+    border-bottom: 4px solid var(--goal-color-dark);
+}
+
+.goal-btn:active {
+    border-bottom-width: 2px;
+}
+
+.sub-btn-a {
+    background-color: var(--team-a-color);
+    color: white;
+    border-bottom: 4px solid var(--team-a-dark);
+}
+
+.sub-btn-a:active {
+    border-bottom-width: 2px;
+}
+
+.sub-btn-b {
+    background-color: var(--team-b-color);
+    color: white;
+    border-bottom: 4px solid var(--team-b-dark);
+}
+
+.sub-btn-b:active {
+    border-bottom-width: 2px;
+}
+
+.team-content {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 400px; /* จำกัดความสูงสำหรับจอเล็ก */
+}
+
+.tab-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
 
 .tabs {
     display: flex;
-    justify-content: center;
-    gap: 10px;
+    border-bottom: 2px solid var(--border-color);
     margin-bottom: 10px;
 }
 
 .tab {
-    padding: 5px 15px;
+    padding: 6px 10px;
     cursor: pointer;
-    border-bottom: 2px solid transparent;
+    font-weight: bold;
+    color: var(--text-secondary);
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.tab:hover {
+    background-color: rgba(0,0,0,0.03);
 }
 
 .tab.active {
-    border-bottom: 2px solid #1976D2;
-    font-weight: bold;
+    color: var(--text-primary);
+    border-bottom-color: var(--team-a-color);
 }
 
-.content-container {
-    position: relative;
+.team-b .tab.active {
+    border-bottom-color: var(--team-b-color);
 }
 
-.empty-state {
-    text-align: center;
-    color: #666;
-    padding: 20px;
-}
-
-.content {
+.tab-content {
     display: none;
+    flex: 1;
+    overflow-y: auto;
 }
 
-.content.active {
+.tab-content.active {
     display: block;
 }
 
+/* Vertical Card Layout */
 .event-card {
-    display: flex;
-    align-items: center;
+    background-color: white;
+    border-radius: 8px;
+    margin-bottom: 10px;
     padding: 10px;
-    border-bottom: 1px solid #eee;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    transition: transform 0.2s ease;
+}
+
+.event-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 .event-icon {
-    margin-right: 10px;
-    font-size: 20px;
+    margin-bottom: 6px;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    height: 25px;
 }
+
+.yellow-icon { color: var(--yellow-card); }
+.red-icon { color: var(--red-card); }
+.goal-icon { color: var(--goal-color); }
+.sub-icon-a { color: var(--team-a-color); }
+.sub-icon-b { color: var(--team-b-color); }
 
 .event-details {
     flex: 1;
@@ -201,62 +483,43 @@ h1 {
 
 .event-title {
     font-weight: bold;
+    margin-bottom: 4px;
+    font-size: 1rem;
 }
 
 .event-time {
-    color: #666;
-    font-size: 12px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
 }
 
 .edit-btn {
-    background: none;
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    background: rgba(0,0,0,0.05);
     border: none;
-    cursor: pointer;
-    color: #1976D2;
-}
-
-.match-controls, .injury-controls {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-#injuryBtn {
-    background-color: #D32F2F;
-    color: white;
-    border-bottom: 4px solid #B71C1C;
-}
-
-#injuryBtn.active {
-    background-color: #4CAF50;
-    border-bottom: 4px solid #2E7D32;
-}
-
-.fab {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 60px;
-    height: 60px;
-    background-color: #1976D2;
-    color: white;
+    width: 25px;
+    height: 25px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
     cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    transition: transform 0.3s;
+    transition: all 0.2s ease;
 }
 
-.fab:hover {
-    transform: scale(1.1);
+.edit-btn:hover {
+    background: rgba(0,0,0,0.1);
+    color: var(--text-primary);
 }
 
-.fab.injury-active {
-    background-color: #D32F2F;
+.divider {
+    width: 2px;
+    background-color: var(--border-color);
+    display: block; /* แสดงในจอใหญ่ */
 }
 
 .modal {
@@ -266,89 +529,457 @@ h1 {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    justify-content: center;
+    background-color: rgba(0,0,0,0.7);
+    z-index: 1000;
     align-items: center;
+    justify-content: center;
 }
 
 .modal-content {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
+    background-color: white;
     width: 90%;
-    max-width: 500px;
-    position: relative;
+    max-width: 350px;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.modal-title {
+    font-size: 1.1rem;
+    font-weight: bold;
 }
 
 .close-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 24px;
+    background: none;
+    border: none;
+    font-size: 1.4rem;
     cursor: pointer;
+    color: var(--text-secondary);
+    transition: color 0.2s ease;
+}
+
+.close-btn:hover {
+    color: var(--text-primary);
 }
 
 .input-group {
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
-.input-group label {
+.input-label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 6px;
+    font-weight: bold;
 }
 
-.input-field, input[type="text"], input[type="number"] {
+.input-field {
     width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: border-color 0.2s ease;
+}
+
+.input-field:focus {
+    border-color: #2196F3;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
 }
 
 .color-picker {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 6px;
+    margin-top: 6px;
 }
 
 .color-option {
-    width: 30px;
-    height: 30px;
+    width: 25px;
+    height: 25px;
     border-radius: 50%;
     cursor: pointer;
     border: 2px solid transparent;
+    transition: transform 0.2s ease;
+}
+
+.color-option:hover {
+    transform: scale(1.1);
 }
 
 .color-option.selected {
-    border: 2px solid #333;
+    border-color: black;
+    transform: scale(1.1);
 }
 
 .modal-actions {
     display: flex;
-    gap: 10px;
     justify-content: flex-end;
+    gap: 10px;
+    margin-top: 15px;
 }
 
 .modal-btn {
-    padding: 10px 20px;
+    padding: 8px 15px;
     border: none;
-    border-radius: 5px;
+    border-radius: 6px;
+    font-weight: bold;
     cursor: pointer;
+    position: relative;
+    transition: all 0.1s ease;
+    transform: translateY(-2px);
+    box-shadow: var(--button-shadow);
+}
+
+.modal-btn:active {
+    transform: translateY(0);
+    box-shadow: var(--button-pressed-shadow);
 }
 
 .cancel-btn {
-    background: #ccc;
+    background-color: var(--neutral-bg);
+    color: var(--text-primary);
+    border-bottom: 4px solid #BDBDBD;
+}
+
+.cancel-btn:active {
+    border-bottom-width: 2px;
+}
+
+.confirm-btn {
+    background-color: #2196F3;
+    color: white;
+    border-bottom: 4px solid #0D47A1;
+}
+
+.confirm-btn:active {
+    border-bottom-width: 2px;
 }
 
 .delete-btn {
-    background: #D32F2F;
+    background-color: #D32F2F;
     color: white;
+    border-bottom: 4px solid #B71C1C;
 }
 
-.sub-window .substitutions-list {
-    margin-top: 5px;
+.delete-btn:active {
+    border-bottom-width: 2px;
+}
+
+.fab {
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #4CAF50;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    border: none;
+    cursor: pointer;
+    z-index: 90;
+    transition: all 0.3s ease;
+}
+
+.fab:hover {
+    transform: scale(1.1);
+}
+
+.fab:active {
+    transform: scale(0.95);
+}
+
+.fab.injury-active {
+    background-color: #D32F2F;
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-secondary);
+    padding: 15px;
+    text-align: center;
+}
+
+.empty-icon {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    opacity: 0.5;
+}
+
+.summary-container {
+    max-height: 50vh; /* ลดความสูงสำหรับจอเล็ก */
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.substitution-fields {
+    margin-top: 10px;
+    border-top: 1px solid var(--border-color);
+    padding-top: 8px;
+}
+
+.sub-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.remove-sub-btn {
+    background: rgba(0,0,0,0.05);
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.9rem;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.remove-sub-btn:hover {
+    background: rgba(0,0,0,0.1);
+    color: var(--text-primary);
+}
+
+.add-btn {
+    background-color: #4CAF50;
+    color: white;
+    margin-top: 8px;
+    border-bottom: 4px solid #2E7D32;
+}
+
+.add-btn:active {
+    border-bottom-width: 2px;
+}
+
+.action-btn.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.substitutions-list {
+    margin-top: 6px;
 }
 
 .sub-entry {
-    margin-left: 20px;
-    font-size: 14px;
+    background-color: rgba(0,0,0,0.03);
+    padding: 5px 8px;
+    border-radius: 4px;
+    margin-bottom: 4px;
+}
+
+.player-numbers {
+    font-weight: bold;
+    font-size: 0.85rem;
+}
+
+.sub-window {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Media Queries for Responsive Design */
+@media (max-width: 768px) {
+    header {
+        min-height: 80px; /* ลดความสูง header */
+    }
+
+    .logo {
+        font-size: 1rem;
+    }
+
+    .settings-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 1rem;
+    }
+
+    .timer-container {
+        gap: 8px;
+    }
+
+    .match-time {
+        font-size: 1.1rem;
+        padding: 5px 10px;
+    }
+
+    .team-score {
+        font-size: 1.1rem;
+        padding: 3px 8px;
+        min-width: 30px;
+    }
+
+    .injury-time, .total-injury {
+        font-size: 0.9rem;
+        padding: 3px 8px;
+    }
+
+    .teams-container {
+        flex-direction: column; /* Team A และ B เรียงแนวตั้ง */
+        padding: 10px;
+        gap: 10px;
+        height: auto; /* ลบการจำกัดความสูง */
+    }
+
+    .team-panel {
+        min-width: 100%; /* เต็มความกว้างในจอเล็ก */
+    }
+
+    .divider {
+        display: none; /* ซ่อนเส้นแยกในจอเล็ก */
+    }
+
+    .team-header {
+        font-size: 1rem;
+        padding: 8px;
+    }
+
+    .team-actions {
+        grid-template-columns: 1fr; /* ปุ่มเรียงเดี่ยว */
+        gap: 6px;
+    }
+
+    .yellow-btn, .red-btn {
+        height: 50px;
+    }
+
+    .goal-btn, .sub-btn-a, .sub-btn-b {
+        grid-column: 1;
+        height: 40px;
+    }
+
+    .control-btn {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+    }
+
+    .team-content {
+        max-height: 300px; /* ลดความสูงในจอเล็ก */
+    }
+
+    .fab {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+        bottom: 10px;
+        right: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 5px;
+    }
+
+    .header-content {
+        padding: 0 5px;
+    }
+
+    .timer-container {
+        gap: 5px;
+    }
+
+    .match-time {
+        font-size: 1rem;
+        padding: 4px 8px;
+    }
+
+    .team-score {
+        font-size: 1rem;
+        padding: 2px 6px;
+        min-width: 25px;
+    }
+
+    .injury-time, .total-injury {
+        font-size: 0.8rem;
+        padding: 2px 6px;
+    }
+
+    .match-controls {
+        padding: 5px;
+        gap: 5px;
+    }
+
+    .control-btn {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+
+    .team-header {
+        font-size: 0.9rem;
+        padding: 6px;
+    }
+
+    .action-btn {
+        font-size: 0.8rem;
+        padding: 6px 0;
+    }
+
+    .yellow-btn, .red-btn {
+        height: 45px;
+    }
+
+    .goal-btn, .sub-btn-a, .sub-btn-b {
+        height: 35px;
+    }
+
+    .event-card {
+        padding: 8px;
+    }
+
+    .event-icon {
+        font-size: 1rem;
+        height: 20px;
+    }
+
+    .event-title {
+        font-size: 0.9rem;
+    }
+
+    .event-time {
+        font-size: 0.75rem;
+    }
+
+    .modal-content {
+        padding: 10px;
+        max-width: 300px;
+    }
+
+    .modal-title {
+        font-size: 1rem;
+    }
+
+    .input-field {
+        padding: 8px;
+        font-size: 0.85rem;
+    }
+
+    .modal-btn {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+    }
 }
