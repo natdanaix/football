@@ -1,17 +1,20 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Match state
-   let matchState = {
+  let matchState = {
     isMatchStarted: false,
-    isSecondHalf: false, // เพิ่มสถานะสำหรับครึ่งหลัง
+    isSecondHalf: false,
     startTime: null,
     elapsedTime: "00:00",
+    firstHalfEndTime: null,
+    firstHalfInjurySeconds: 0,
     teamA: {
         name: "Team A",
         color: "#1976D2",
         cards: [],
         substitutions: [],
         subWindows: 0,
-        goals: 0
+        goals: 0,
+        halfTimeSubUsed: false // เพิ่มสถานะสำหรับการเปลี่ยนตัวช่วงพักครึ่ง
     },
     teamB: {
         name: "Team B",
@@ -19,7 +22,8 @@ document.addEventListener('DOMContentLoaded', function() {
         cards: [],
         substitutions: [],
         subWindows: 0,
-        goals: 0
+        goals: 0,
+        halfTimeSubUsed: false // เพิ่มสถานะสำหรับการเปลี่ยนตัวช่วงพักครึ่ง
     },
     isInjuryTimeActive: false,
     totalInjurySeconds: 0,
@@ -38,6 +42,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let autoSaveTimer;
 
     // DOM Elements
+    const halfTimeSubTeamABtn = document.getElementById('halfTimeSubTeamABtn');
+    const halfTimeSubTeamBBtn = document.getElementById('halfTimeSubTeamBBtn');
     const startSecondHalfBtn = document.getElementById('startSecondHalfBtn');
     const resetDataBtn = document.getElementById('resetDataBtn');
     const matchTimeEl = document.getElementById('matchTime');
@@ -173,7 +179,70 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         updateSubstitutionButtonsState();
     }
-
+function addSubstitution(team, isHalfTime = false) {
+    const playerInNumber = document.getElementById(`playerInNumber${team}`).value;
+    const playerOutNumber = document.getElementById(`playerOutNumber${team}`).value;
+    
+    if (!playerInNumber || !playerOutNumber) {
+        alert('Please enter both player numbers');
+        return;
+    }
+    
+    const teamData = team === 'A' ? matchState.teamA : matchState.teamB;
+    
+    // ตรวจสอบขีดจำกัด 5 คน
+    if (teamData.substitutions.length >= 5) {
+        alert(`Maximum of 5 substitutions reached for ${teamData.name}`);
+        return;
+    }
+    
+    // ตรวจสอบการเปลี่ยนตัวช่วงพักครึ่ง
+    if (isHalfTime) {
+        if (teamData.halfTimeSubUsed) {
+            alert(`Half-time substitution already used for ${teamData.name}`);
+            return;
+        }
+        teamData.halfTimeSubUsed = true;
+    }
+    
+    const subData = {
+        playerInNumber,
+        playerOutNumber,
+        timeStamp: isHalfTime ? "Half-Time" : matchState.elapsedTime
+    };
+    
+    if (team === 'A') {
+        if (!isHalfTime && !matchState.activeSubWindow.teamA) {
+            matchState.teamA.subWindows += 1;
+            matchState.activeSubWindow.teamA = true;
+        }
+        matchState.teamA.substitutions.push(subData);
+    } else {
+        if (!isHalfTime && !matchState.activeSubWindow.teamB) {
+            matchState.teamB.subWindows += 1;
+            matchState.activeSubWindow.teamB = true;
+        }
+        matchState.teamB.substitutions.push(subData);
+    }
+    
+    closeModal(`subModal${team}`);
+    if (isHalfTime) {
+        // ซ่อนปุ่มหลังใช้การเปลี่ยนตัวช่วงพักครึ่ง
+        if (team === 'A') halfTimeSubTeamABtn.style.display = 'none';
+        else halfTimeSubTeamBBtn.style.display = 'none';
+    }
+    saveMatchData();
+    updateUI();
+}
+    function showSubModal(team, isHalfTime = false) {
+    const modal = document.getElementById(`subModal${team}`);
+    const title = document.getElementById(`subModalTitle${team}`);
+    title.textContent = isHalfTime ? `${matchState[team === 'A' ? 'teamA' : 'teamB'].name} - Half-Time Substitution` : `${matchState[team === 'A' ? 'teamA' : 'teamB'].name} - Substitution`;
+    document.getElementById(`playerInNumber${team}`).value = '';
+    document.getElementById(`playerOutNumber${team}`).value = '';
+    document.getElementById(`addSubBtn${team}`).onclick = () => addSubstitution(team, isHalfTime);
+    modal.style.display = 'flex';
+}
     // Set up all event listeners
     function setupEventListeners() {
         startSecondHalfBtn.addEventListener('click', startSecondHalf);
@@ -182,6 +251,8 @@ document.addEventListener('DOMContentLoaded', function() {
         injuryFab.addEventListener('click', toggleInjuryTime);
         endMatchBtn.addEventListener('click', endMatch);
         resetDataBtn.addEventListener('click', resetAllData);
+        halfTimeSubTeamABtn.addEventListener('click', () => showSubModal('A', true)); // true = half-time mode
+        halfTimeSubTeamBBtn.addEventListener('click', () => showSubModal('B', true));
        
 
         teamAYellowBtn.addEventListener('click', () => showCardDialog(true, true, false));
@@ -527,14 +598,14 @@ function startMatch() {
     saveMatchData();
 }
 
-    function startSecondHalf() {
-    if (matchState.isSecondHalf) return; // ป้องกันการเริ่มซ้ำ
+   function startSecondHalf() {
+    if (matchState.isSecondHalf) return;
     matchState.isMatchStarted = true;
     matchState.isSecondHalf = true;
-    matchState.startTime = new Date(); // รีเซ็ตเวลาเริ่มต้น
-    matchState.elapsedTime = "45:00"; // เริ่มที่ 45:00
-    matchState.totalInjurySeconds = 0; // รีเซ็ต injury time สำหรับครึ่งหลัง (ถ้าต้องการแยก)
-    matchState.injuryTimePeriods = []; // รีเซ็ต periods (ถ้าต้องการแยก)
+    matchState.startTime = new Date();
+    matchState.elapsedTime = "45:00";
+    halfTimeSubTeamABtn.style.display = 'none'; // ซ่อนปุ่มเมื่อเริ่มครึ่งหลัง
+    halfTimeSubTeamBBtn.style.display = 'none';
     startTimers();
     updateUI();
     saveMatchData();
@@ -998,21 +1069,24 @@ function startMatch() {
         resetConfirmModal.style.display = 'flex';
     }
 
-  function resetAllData() {
+ function resetAllData() {
     clearInterval(matchTimer);
     clearInterval(injuryTimer);
     matchState = {
         isMatchStarted: false,
-        isSecondHalf: false, // รีเซ็ตสถานะครึ่งหลัง
+        isSecondHalf: false,
         startTime: null,
         elapsedTime: "00:00",
+        firstHalfEndTime: null,
+        firstHalfInjurySeconds: 0,
         teamA: {
             name: "Team A",
             color: "#1976D2",
             cards: [],
             substitutions: [],
             subWindows: 0,
-            goals: 0
+            goals: 0,
+            halfTimeSubUsed: false
         },
         teamB: {
             name: "Team B",
@@ -1020,7 +1094,8 @@ function startMatch() {
             cards: [],
             substitutions: [],
             subWindows: 0,
-            goals: 0
+            goals: 0,
+            halfTimeSubUsed: false
         },
         isInjuryTimeActive: false,
         totalInjurySeconds: 0,
@@ -1046,13 +1121,15 @@ function endMatch() {
     if (matchState.isInjuryTimeActive) toggleInjuryTime();
     
     if (!matchState.isSecondHalf) {
-        // ครึ่งแรกจบ แสดงปุ่ม Start Second Half
+        matchState.firstHalfEndTime = matchState.elapsedTime;
+        matchState.firstHalfInjurySeconds = matchState.totalInjurySeconds;
         matchState.isMatchStarted = false;
         startSecondHalfBtn.style.display = 'block';
+        halfTimeSubTeamABtn.style.display = matchState.teamA.halfTimeSubUsed ? 'none' : 'block';
+        halfTimeSubTeamBBtn.style.display = matchState.teamB.halfTimeSubUsed ? 'none' : 'block';
         updateUI();
         saveMatchData();
     } else {
-        // ครึ่งหลังจบ แสดงสรุปแมตช์
         showMatchSummary();
     }
 }
