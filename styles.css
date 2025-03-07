@@ -205,7 +205,15 @@ header {
 .reset-btn:active {
     border-bottom-width: 2px;
 }
+.start-second-btn {
+    background-color: #2196F3; /* สีน้ำเงิน */
+    color: white;
+    border-bottom: 4px solid #0D47A1;
+}
 
+.start-second-btn:active {
+    border-bottom-width: 2px;
+}
 .injury-btn {
     background-color: #4CAF50;
     color: white;
