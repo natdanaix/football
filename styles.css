@@ -1,4 +1,5 @@
 /* Enhanced styles with 3D buttons and vertical cards */
+
 :root {
     --team-a-color: #1976D2;
     --team-a-dark: #0D47A1;
@@ -39,9 +40,7 @@ body {
 
 .container {
     width: 100%;
-    max-width: 1200px;
     margin: 0 auto;
-    padding: 10px;
 }
 
 header {
@@ -56,18 +55,17 @@ header {
     top: 0;
     z-index: 100;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    min-height: 100px;
+    min-height: 120px;
 }
 
 .header-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 10px;
 }
 
 .logo {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     font-weight: bold;
     text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
 }
@@ -76,10 +74,10 @@ header {
     background: rgba(255,255,255,0.2);
     border: none;
     color: white;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     cursor: pointer;
-    width: 35px;
-    height: 35px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -97,18 +95,18 @@ header {
     justify-content: center;
     align-items: center;
     margin-top: 10px;
-    padding: 0 10px;
+    padding: 0 20px;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 20px;
 }
 
 .match-time {
     background-color: #0D47A1;
     color: white;
-    font-size: 1.3rem;
+    font-size: 1.5rem;
     font-weight: bold;
-    padding: 6px 12px;
-    border-radius: 10px;
+    padding: 8px 16px;
+    border-radius: 12px;
     order: 2;
     box-shadow: 0 3px 6px rgba(0,0,0,0.2);
     text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
@@ -117,12 +115,12 @@ header {
 .team-score {
     background-color: #FFFFFF;
     color: var(--text-primary);
-    font-size: 1.3rem;
+    font-size: 1.5rem;
     font-weight: bold;
-    padding: 4px 10px;
-    border-radius: 10px;
+    padding: 6px 12px;
+    border-radius: 12px;
     box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-    min-width: 35px;
+    min-width: 40px;
     text-align: center;
 }
 
@@ -137,10 +135,10 @@ header {
 .injury-time {
     background-color: #D32F2F;
     color: white;
-    font-size: 1rem;
+    font-size: 1.2rem;
     font-weight: bold;
-    padding: 4px 10px;
-    border-radius: 10px;
+    padding: 6px 12px;
+    border-radius: 12px;
     order: 4;
     box-shadow: 0 3px 6px rgba(0,0,0,0.2);
 }
@@ -148,10 +146,10 @@ header {
 .total-injury {
     background-color: #FF9800;
     color: white;
-    font-size: 1rem;
+    font-size: 1.2rem;
     font-weight: bold;
-    padding: 4px 10px;
-    border-radius: 10px;
+    padding: 6px 12px;
+    border-radius: 12px;
     order: 5;
     box-shadow: 0 3px 6px rgba(0,0,0,0.2);
 }
@@ -159,24 +157,23 @@ header {
 .match-controls {
     display: flex;
     justify-content: center;
-    padding: 10px;
+    padding: 12px;
     background-color: white;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    gap: 10px;
-    flex-wrap: wrap;
+    gap: 15px;
 }
 
 /* 3D Buttons Styling */
 .control-btn {
-    padding: 10px 15px;
+    padding: 12px 18px;
     border: none;
     border-radius: 6px;
     font-weight: bold;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 6px;
-    width: auto;
+    gap: 8px;
+    width: 100%;
     justify-content: center;
     position: relative;
     transition: all 0.1s ease;
@@ -226,11 +223,7 @@ header {
 
 .teams-container {
     display: flex;
-    justify-content: space-between;
-    gap: 15px;
-    padding: 15px;
-    height: calc(100vh - 200px); /* คงความสูงสำหรับจอใหญ่ */
-    overflow-x: auto; /* เพิ่ม scroll แนวนอนถ้าจอแคบเกิน */
+    height: calc(100vh - 180px);
 }
 
 .team-panel {
@@ -240,9 +233,6 @@ header {
     flex-direction: column;
     position: relative;
     overflow: hidden;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    min-width: 250px; /* ขนาดขั้นต่ำสำหรับทั้งสองทีม */
 }
 
 .team-a {
@@ -254,7 +244,7 @@ header {
 }
 
 .team-header {
-    padding: 10px;
+    padding: 12px;
     text-align: center;
     margin-bottom: 10px;
     border-radius: 8px;
@@ -262,7 +252,6 @@ header {
     color: white;
     box-shadow: 0 3px 6px rgba(0,0,0,0.1);
     text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-    font-size: 1.1rem;
 }
 
 .team-a .team-header {
@@ -278,17 +267,17 @@ header {
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: auto auto auto;
-    margin-bottom: 10px;
-    gap: 8px;
+    margin-bottom: 15px;
+    gap: 10px;
 }
 
 .action-btn {
-    padding: 8px 0;
+    padding: 10px 0;
     border: none;
     border-radius: 6px;
     font-weight: bold;
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     position: relative;
     transition: all 0.1s ease;
     transform: translateY(-2px);
@@ -299,7 +288,7 @@ header {
 /* Make yellow and red cards fit the top row with increased height */
 .yellow-btn, .red-btn {
     grid-row: 1;
-    height: 60px;
+    height: 70px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -310,8 +299,8 @@ header {
 .yellow-btn::before, .red-btn::before {
     content: "";
     display: block;
-    width: 20px;
-    height: 30px;
+    width: 24px;
+    height: 36px;
     margin-bottom: 5px;
     border-radius: 3px;
 }
@@ -330,13 +319,13 @@ header {
 .goal-btn {
     grid-row: 2;
     grid-column: 1 / span 2;
-    height: 45px;
+    height: 50px;
 }
 
 .sub-btn-a, .sub-btn-b {
     grid-row: 3;
     grid-column: 1 / span 2;
-    height: 45px;
+    height: 50px;
 }
 
 .action-btn:active {
@@ -397,7 +386,6 @@ header {
 .team-content {
     flex: 1;
     overflow-y: auto;
-    max-height: 400px;
 }
 
 .tab-container {
@@ -413,7 +401,7 @@ header {
 }
 
 .tab {
-    padding: 6px 10px;
+    padding: 8px 12px;
     cursor: pointer;
     font-weight: bold;
     color: var(--text-secondary);
@@ -449,34 +437,48 @@ header {
     background-color: white;
     border-radius: 8px;
     margin-bottom: 10px;
-    padding: 10px;
+    padding: 12px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     position: relative;
     display: flex;
-    flex-direction:-stats: column;
+    flex-direction: column;
     width: 100%;
     transition: transform 0.2s ease;
 }
 
 .event-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0, analyze X user profiles, posts, and links0.15);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 .event-icon {
-    margin-bottom: 6px;
-    font-size: 1.2rem;
+    margin-bottom: 8px;
+    font-size: 1.4rem;
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    height: 25px;
+    height: 30px;
 }
 
-.yellow-icon { color: var(--yellow-card); }
-.red-icon { color: var(--red-card); }
-.goal-icon { color: var(--goal-color); }
-.sub-icon-a { color: var(--team-a-color); }
-.sub-icon-b { color: var(--team-b-color); }
+.yellow-icon {
+    color: var(--yellow-card);
+}
+
+.red-icon {
+    color: var(--red-card);
+}
+
+.goal-icon {
+    color: var(--goal-color);
+}
+
+.sub-icon-a {
+    color: var(--team-a-color);
+}
+
+.sub-icon-b {
+    color: var(--team-b-color);
+}
 
 .event-details {
     flex: 1;
@@ -484,29 +486,29 @@ header {
 
 .event-title {
     font-weight: bold;
-    margin-bottom: 4px;
-    font-size: 1rem;
+    margin-bottom: 5px;
+    font-size: 1.1rem;
 }
 
 .event-time {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     color: var(--text-secondary);
-    margin-bottom: 4px;
+    margin-bottom: 5px;
 }
 
 .edit-btn {
     position: absolute;
-    right: 8px;
-    top: 8px;
+    right: 10px;
+    top: 10px;
     background: rgba(0,0,0,0.05);
     border: none;
-    width: 25px;
-    height: 25px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.2s ease;
@@ -540,7 +542,7 @@ header {
     width: 90%;
     max-width: 350px;
     border-radius: 12px;
-    padding: 15px;
+    padding: 20px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.3);
     max-height: 90vh;
     overflow-y: auto;
@@ -550,18 +552,18 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
 }
 
 .modal-title {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     font-weight: bold;
 }
 
 .close-btn {
     background: none;
     border: none;
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     cursor: pointer;
     color: var(--text-secondary);
     transition: color 0.2s ease;
@@ -572,21 +574,21 @@ header {
 }
 
 .input-group {
-    margin-bottom: 10px;
+    margin-bottom: 15px;
 }
 
 .input-label {
     display: block;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
     font-weight: bold;
 }
 
 .input-field {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     border: 1px solid var(--border-color);
     border-radius: 6px;
-    font-size: 0.9rem;
+    font-size: 1rem;
     transition: border-color 0.2s ease;
 }
 
@@ -599,13 +601,13 @@ header {
 .color-picker {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 6px;
+    gap: 8px;
+    margin-top: 8px;
 }
 
 .color-option {
-    width: 25px;
-    height: 25px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     cursor: pointer;
     border: 2px solid transparent;
@@ -624,12 +626,12 @@ header {
 .modal-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
-    margin-top: 15px;
+    gap: 12px;
+    margin-top: 20px;
 }
 
 .modal-btn {
-    padding: 8px 15px;
+    padding: 10px 18px;
     border: none;
     border-radius: 6px;
     font-weight: bold;
@@ -677,17 +679,17 @@ header {
 
 .fab {
     position: fixed;
-    bottom: 15px;
-    right: 15px;
-    width: 50px;
-    height: 50px;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     background-color: #4CAF50;
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+    font-size: 24px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.3);
     border: none;
     cursor: pointer;
@@ -714,33 +716,33 @@ header {
     justify-content: center;
     height: 100%;
     color: var(--text-secondary);
-    padding: 15px;
+    padding: 20px;
     text-align: center;
 }
 
 .empty-icon {
-    font-size: 2.5rem;
-    margin-bottom: 10px;
+    font-size: 3rem;
+    margin-bottom: 15px;
     opacity: 0.5;
 }
 
 .summary-container {
-    max-height: 50vh;
+    max-height: 60vh;
     overflow-y: auto;
-    padding-right: 8px;
+    padding-right: 10px;
 }
 
 .substitution-fields {
-    margin-top: 10px;
+    margin-top: 15px;
     border-top: 1px solid var(--border-color);
-    padding-top: 8px;
+    padding-top: 10px;
 }
 
 .sub-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
 .remove-sub-btn {
@@ -748,9 +750,9 @@ header {
     border: none;
     color: var(--text-secondary);
     cursor: pointer;
-    font-size: 0.9rem;
-    width: 20px;
-    height: 20px;
+    font-size: 1rem;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -766,7 +768,7 @@ header {
 .add-btn {
     background-color: #4CAF50;
     color: white;
-    margin-top: 8px;
+    margin-top: 10px;
     border-bottom: 4px solid #2E7D32;
 }
 
@@ -781,208 +783,25 @@ header {
     box-shadow: none;
 }
 
+/* Substitution list vertical layout */
 .substitutions-list {
-    margin-top: 6px;
+    margin-top: 8px;
 }
 
 .sub-entry {
     background-color: rgba(0,0,0,0.03);
-    padding: 5px 8px;
+    padding: 6px 10px;
     border-radius: 4px;
-    margin-bottom: 4px;
+    margin-bottom: 5px;
 }
 
 .player-numbers {
     font-weight: bold;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
 }
 
+/* Fix for vertical sub windows */
 .sub-window {
     display: flex;
     flex-direction: column;
-}
-
-/* Media Queries for Responsive Design */
-@media (max-width: 768px) {
-    header {
-        min-height: 80px;
-    }
-
-    .logo {
-        font-size: 1rem;
-    }
-
-    .settings-btn {
-        width: 30px;
-        height: 30px;
-        font-size: 1rem;
-    }
-
-    .timer-container {
-        gap: 8px;
-    }
-
-    .match-time {
-        font-size: 1.1rem;
-        padding: 5px 10px;
-    }
-
-    .team-score {
-        font-size: 1.1rem;
-        padding: 3px 8px;
-        min-width: 30px;
-    }
-
-    .injury-time, .total-injury {
-        font-size: 0.9rem;
-        padding: 3px 8px;
-    }
-
-    .teams-container {
-        gap: 10px;
-        padding: 10px;
-        height: auto; /* ปรับให้ยืดหยุ่นตามเนื้อหา */
-    }
-
-    .team-panel {
-        min-width: 200px; /* ลดขนาดขั้นต่ำสำหรับจอเล็ก */
-    }
-
-    .team-header {
-        font-size: 1rem;
-        padding: 8px;
-    }
-
-    .team-actions {
-        grid-template-columns: 1fr 1fr; /* คง 2 คอลัมน์ */
-        gap: 6px;
-    }
-
-    .yellow-btn, .red-btn {
-        height: 50px;
-    }
-
-    .goal-btn, .sub-btn-a, .sub-btn-b {
-        height: 40px;
-    }
-
-    .control-btn {
-        padding: 8px 12px;
-        font-size: 0.9rem;
-    }
-
-    .team-content {
-        max-height: 300px;
-    }
-
-    .fab {
-        width: 40px;
-        height: 40px;
-        font-size: 18px;
-        bottom: 10px;
-        right: 10px;
-    }
-}
-
-@media (max-width: 480px) {
-    .container {
-        padding: 5px;
-    }
-
-    .header-content {
-        padding: 0 5px;
-    }
-
-    .timer-container {
-        gap: 5px;
-    }
-
-    .match-time {
-        font-size: 1rem;
-        padding: 4px 8px;
-    }
-
-    .team-score {
-        font-size: 1rem;
-        padding: 2px 6px;
-        min-width: 25px;
-    }
-
-    .injury-time, .total-injury {
-        font-size: 0.8rem;
-        padding: 2px 6px;
-    }
-
-    .match-controls {
-        padding: 5px;
-        gap: 5px;
-    }
-
-    .control-btn {
-        padding: 6px 10px;
-        font-size: 0.8rem;
-    }
-
-    .teams-container {
-        gap: 5px;
-        padding: 5px;
-    }
-
-    .team-panel {
-        min-width: 150px; /* ลดขนาดขั้นต่ำเพิ่มเติม */
-    }
-
-    .team-header {
-        font-size: 0.9rem;
-        padding: 6px;
-    }
-
-    .action-btn {
-        font-size: 0.8rem;
-        padding: 6px 0;
-    }
-
-    .yellow-btn, .red-btn {
-        height: 45px;
-    }
-
-    .goal-btn, .sub-btn-a, .sub-btn-b {
-        height: 35px;
-    }
-
-    .event-card {
-        padding: 8px;
-    }
-
-    .event-icon {
-        font-size: 1rem;
-        height: 20px;
-    }
-
-    .event-title {
-        font-size: 0.9rem;
-    }
-
-    .event-time {
-        font-size: 0.75rem;
-    }
-
-    .modal-content {
-        padding: 10px;
-        max-width: 300px;
-    }
-
-    .modal-title {
-        font-size: 1rem;
-    }
-
-    .input-field {
-        padding: 8px;
-        font-size: 0.85rem;
-    }
-
-    .modal-btn {
-        padding: 6px 12px;
-        font-size: 0.85rem;
-    }
 }
