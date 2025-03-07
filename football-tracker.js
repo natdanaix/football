@@ -533,56 +533,99 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function updateMatchTime() {
-        if (!matchState.startTime) return;
-        const now = new Date();
-        const difference = now - matchState.startTime;
-        const minutes = Math.floor(difference / 60000);
-        const seconds = Math.floor((difference % 60000) / 1000);
-        matchState.elapsedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-        matchTimeEl.textContent = matchState.elapsedTime;
-    }
-
-    function toggleInjuryTime() {
-        if (!matchState.isMatchStarted) {
-            alert('Please start the match first');
-            return;
+   function updateMatchTime() {
+    if (!matchState.startTime) return;
+    const now = new Date();
+    const difference = now - matchState.startTime;
+    const totalSeconds = Math.floor(difference / 1000);
+    const regularMinutes = Math.min(45, Math.floor(totalSeconds / 60)); // Cap at 45 minutes
+    const regularSeconds = totalSeconds % 60;
+    matchState.elapsedTime = `${String(regularMinutes).padStart(2, '0')}:${String(regularSeconds).padStart(2, '0')}`;
+    
+    // If match time reaches 45:00 and there’s injury time to count down
+    if (totalSeconds >= 45 * 60 && matchState.totalInjurySeconds > 0) {
+        const elapsedSince45 = totalSeconds - (45 * 60);
+        const remainingInjurySeconds = Math.max(0, matchState.totalInjurySeconds - elapsedSince45);
+        const injuryMinutes = Math.floor(remainingInjurySeconds / 60);
+        const injurySeconds = remainingInjurySeconds % 60;
+        const countdownDisplay = `+${String(injuryMinutes).padStart(2, '0')}:${String(injurySeconds).padStart(2, '0')}`;
+        
+        // Display countdown in injuryTime element with red text
+        injuryTimeEl.textContent = countdownDisplay;
+        injuryTimeEl.style.display = 'block';
+        injuryTimeEl.style.color = '#D32F2F'; // Red text for countdown
+        totalInjuryEl.style.display = 'none';
+        
+        // Stop match if injury time runs out
+        if (remainingInjurySeconds === 0 && !matchState.isInjuryTimeActive) {
+            endMatch();
         }
-        
-        matchState.isInjuryTimeActive = !matchState.isInjuryTimeActive;
-        
-        if (matchState.isInjuryTimeActive) {
-            matchState.currentInjuryStartTime = new Date();
-            injuryTimer = setInterval(updateInjuryTime, 1000);
-            injuryTimeEl.style.display = 'block';
-            totalInjuryEl.style.display = 'none';
-            injuryBtn.classList.add('active');
-            injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Stop Injury Time';
-            injuryFab.classList.add('injury-active');
-        } else {
-            if (matchState.currentInjuryStartTime) {
-                const now = new Date();
-                const injuryDuration = now - matchState.currentInjuryStartTime;
-                const injurySeconds = Math.floor(injuryDuration / 1000);
-                matchState.totalInjurySeconds += injurySeconds;
-                const mins = String(Math.floor(injurySeconds / 60)).padStart(2, '0');
-                const secs = String(injurySeconds % 60).padStart(2, '0');
-                matchState.injuryTimePeriods.push(`+${mins}:${secs}`);
-                showInjuryTimeSummary(injurySeconds);
+    } else {
+        // Normal display before 45 minutes
+        matchTimeEl.textContent = matchState.elapsedTime;
+        injuryTimeEl.style.color = 'white'; // Reset to white if not counting down
+        if (!matchState.isInjuryTimeActive) {
+            injuryTimeEl.style.display = 'none';
+            if (matchState.totalInjurySeconds > 0) {
+                totalInjuryEl.textContent = getTotalInjuryTimeDisplay();
+                totalInjuryEl.style.display = 'block';
+            } else {
+                totalInjuryEl.style.display = 'none';
             }
-            clearInterval(injuryTimer);
-            matchState.currentInjuryStartTime = null;
-            matchState.currentInjuryTimeDisplay = '+00:00';
+        }
+    }
+}
+
+   function toggleInjuryTime() {
+    if (!matchState.isMatchStarted) {
+        alert('Please start the match first');
+        return;
+    }
+    
+    matchState.isInjuryTimeActive = !matchState.isInjuryTimeActive;
+    
+    if (matchState.isInjuryTimeActive) {
+        matchState.currentInjuryStartTime = new Date();
+        injuryTimer = setInterval(updateInjuryTime, 1000);
+        injuryTimeEl.style.display = 'block';
+        totalInjuryEl.style.display = 'none';
+        injuryBtn.classList.add('active');
+        injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Stop Injury Time';
+        injuryFab.classList.add('injury-active');
+    } else {
+        if (matchState.currentInjuryStartTime) {
+            const now = new Date();
+            const injuryDuration = now - matchState.currentInjuryStartTime;
+            const injurySeconds = Math.floor(injuryDuration / 1000);
+            matchState.totalInjurySeconds += injurySeconds;
+            const mins = String(Math.floor(injurySeconds / 60)).padStart(2, '0');
+            const secs = String(injurySeconds % 60).padStart(2, '0');
+            matchState.injuryTimePeriods.push(`+${mins}:${secs}`);
+            showInjuryTimeSummary(injurySeconds);
+        }
+        clearInterval(injuryTimer);
+        matchState.currentInjuryStartTime = null;
+        matchState.currentInjuryTimeDisplay = '+00:00';
+        
+        // If after 45 minutes, start countdown immediately
+        const totalSeconds = Math.floor((new Date() - matchState.startTime) / 1000);
+        if (totalSeconds >= 45 * 60) {
+            injuryTimeEl.style.display = 'block';
+            injuryTimeEl.style.color = '#D32F2F'; // Red for countdown
+            totalInjuryEl.style.display = 'none';
+        } else {
             injuryTimeEl.style.display = 'none';
             totalInjuryEl.textContent = getTotalInjuryTimeDisplay();
             totalInjuryEl.style.display = 'block';
-            injuryBtn.classList.remove('active');
-            injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Injury Time';
-            injuryFab.classList.remove('injury-active');
         }
         
-        saveMatchData();
+        injuryBtn.classList.remove('active');
+        injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Injury Time';
+        injuryFab.classList.remove('injury-active');
     }
+    
+    saveMatchData();
+}
 
     function updateInjuryTime() {
         if (!matchState.currentInjuryStartTime) return;
@@ -977,16 +1020,16 @@ document.addEventListener('DOMContentLoaded', function() {
      
     }
 
-    function endMatch() {
-        if (!matchState.isMatchStarted) {
-            alert('There is no match to end');
-            return;
-        }
-        clearInterval(matchTimer);
-        clearInterval(injuryTimer);
-        if (matchState.isInjuryTimeActive) toggleInjuryTime();
-        showMatchSummary();
+function endMatch() {
+    if (!matchState.isMatchStarted) {
+        alert('There is no match to end');
+        return;
     }
+    clearInterval(matchTimer);
+    clearInterval(injuryTimer);
+    if (matchState.isInjuryTimeActive) toggleInjuryTime();
+    showMatchSummary();
+}
 
     function showMatchSummary() {
         const teamA = matchState.teamA;
