@@ -439,7 +439,15 @@ header {
 .tab-content.active {
     display: block;
 }
+.sub-btn {
+    background-color: #4CAF50; /* สีเขียว */
+    color: white;
+    border-bottom: 4px solid #2E7D32;
+}
 
+.sub-btn:active {
+    border-bottom-width: 2px;
+}
 /* Vertical Card Layout */
 .event-card {
     background-color: white;
