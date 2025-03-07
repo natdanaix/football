@@ -39,9 +39,9 @@ body {
 
 .container {
     width: 100%;
-    max-width: 1200px; /* จำกัดความกว้างสูงสุด */
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 10px; /* เพิ่ม padding สำหรับขอบจอเล็ก */
+    padding: 10px;
 }
 
 header {
@@ -56,7 +56,7 @@ header {
     top: 0;
     z-index: 100;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    min-height: 100px; /* ลดความสูงสำหรับจอเล็ก */
+    min-height: 100px;
 }
 
 .header-content {
@@ -67,7 +67,7 @@ header {
 }
 
 .logo {
-    font-size: 1.2rem; /* ปรับขนาดตามหน้าจอ */
+    font-size: 1.2rem;
     font-weight: bold;
     text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
 }
@@ -99,13 +99,13 @@ header {
     margin-top: 10px;
     padding: 0 10px;
     flex-wrap: wrap;
-    gap: 10px; /* ลด gap สำหรับจอเล็ก */
+    gap: 10px;
 }
 
 .match-time {
     background-color: #0D47A1;
     color: white;
-    font-size: 1.3rem; /* ปรับขนาดตามหน้าจอ */
+    font-size: 1.3rem;
     font-weight: bold;
     padding: 6px 12px;
     border-radius: 10px;
@@ -163,7 +163,7 @@ header {
     background-color: white;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     gap: 10px;
-    flex-wrap: wrap; /* ให้ปุ่มเรียงลงเมื่อจอแคบ */
+    flex-wrap: wrap;
 }
 
 /* 3D Buttons Styling */
@@ -229,7 +229,8 @@ header {
     justify-content: space-between;
     gap: 15px;
     padding: 15px;
-    flex-wrap: wrap; /* ให้ Team A และ B เรียงลงเมื่อจอแคบ */
+    height: calc(100vh - 200px); /* คงความสูงสำหรับจอใหญ่ */
+    overflow-x: auto; /* เพิ่ม scroll แนวนอนถ้าจอแคบเกิน */
 }
 
 .team-panel {
@@ -241,7 +242,7 @@ header {
     overflow: hidden;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    min-width: 300px; /* ขนาดขั้นต่ำสำหรับจอเล็ก */
+    min-width: 250px; /* ขนาดขั้นต่ำสำหรับทั้งสองทีม */
 }
 
 .team-a {
@@ -396,7 +397,7 @@ header {
 .team-content {
     flex: 1;
     overflow-y: auto;
-    max-height: 400px; /* จำกัดความสูงสำหรับจอเล็ก */
+    max-height: 400px;
 }
 
 .tab-container {
@@ -452,14 +453,14 @@ header {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     position: relative;
     display: flex;
-    flex-direction: column;
+    flex-direction:-stats: column;
     width: 100%;
     transition: transform 0.2s ease;
 }
 
 .event-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 8px rgba(0,0,0, analyze X user profiles, posts, and links0.15);
 }
 
 .event-icon {
@@ -519,7 +520,6 @@ header {
 .divider {
     width: 2px;
     background-color: var(--border-color);
-    display: block; /* แสดงในจอใหญ่ */
 }
 
 .modal {
@@ -725,7 +725,7 @@ header {
 }
 
 .summary-container {
-    max-height: 50vh; /* ลดความสูงสำหรับจอเล็ก */
+    max-height: 50vh;
     overflow-y: auto;
     padding-right: 8px;
 }
@@ -805,7 +805,7 @@ header {
 /* Media Queries for Responsive Design */
 @media (max-width: 768px) {
     header {
-        min-height: 80px; /* ลดความสูง header */
+        min-height: 80px;
     }
 
     .logo {
@@ -839,18 +839,13 @@ header {
     }
 
     .teams-container {
-        flex-direction: column; /* Team A และ B เรียงแนวตั้ง */
-        padding: 10px;
         gap: 10px;
-        height: auto; /* ลบการจำกัดความสูง */
+        padding: 10px;
+        height: auto; /* ปรับให้ยืดหยุ่นตามเนื้อหา */
     }
 
     .team-panel {
-        min-width: 100%; /* เต็มความกว้างในจอเล็ก */
-    }
-
-    .divider {
-        display: none; /* ซ่อนเส้นแยกในจอเล็ก */
+        min-width: 200px; /* ลดขนาดขั้นต่ำสำหรับจอเล็ก */
     }
 
     .team-header {
@@ -859,7 +854,7 @@ header {
     }
 
     .team-actions {
-        grid-template-columns: 1fr; /* ปุ่มเรียงเดี่ยว */
+        grid-template-columns: 1fr 1fr; /* คง 2 คอลัมน์ */
         gap: 6px;
     }
 
@@ -868,7 +863,6 @@ header {
     }
 
     .goal-btn, .sub-btn-a, .sub-btn-b {
-        grid-column: 1;
         height: 40px;
     }
 
@@ -878,7 +872,7 @@ header {
     }
 
     .team-content {
-        max-height: 300px; /* ลดความสูงในจอเล็ก */
+        max-height: 300px;
     }
 
     .fab {
@@ -927,6 +921,15 @@ header {
     .control-btn {
         padding: 6px 10px;
         font-size: 0.8rem;
+    }
+
+    .teams-container {
+        gap: 5px;
+        padding: 5px;
+    }
+
+    .team-panel {
+        min-width: 150px; /* ลดขนาดขั้นต่ำเพิ่มเติม */
     }
 
     .team-header {
