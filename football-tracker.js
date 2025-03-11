@@ -605,7 +605,7 @@ function createHalfTimeSummaryModal() {
             matchState.currentInjuryTimeDisplay = "+00:00";
             
             // Lock display at 02:00 (or 45:00 for normal time)
-            matchState.elapsedTime = "02:00";  // or "45:00"
+            matchState.elapsedTime = "45:00";  // or "45:00"
             
             // Hide Injury Time buttons during half-time
             injuryBtn.style.display = 'none';
