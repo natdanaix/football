@@ -13,16 +13,39 @@
         <header>
             <div class="header-content">
                 <div class="logo">THAI LEAGUE</div>
-                <button class="settings-btn" id="settingsBtn">
-                    <i class="fas fa-cog"></i>
-                </button>
+                <div class="header-actions">
+                    <button class="save-pdf-btn" id="savePdfBtn" title="Save as PDF">
+                        <i class="fas fa-file-pdf"></i>
+                    </button>
+                    <button class="settings-btn" id="settingsBtn">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
             </div>
             <div class="timer-container">
-                <div class="team-score" id="teamAScore">0</div>
-                <div class="match-time" id="matchTime">00:00</div>
-                <div class="team-score" id="teamBScore">0</div>
-                <div class="injury-time" id="injuryTime" style="display: none;">+00:00</div>
-                <div class="total-injury" id="totalInjury" style="display: none;">+00:00</div>
+                <div class="team-side">
+                    <div class="team-info">
+                        <div class="team-jersey-container">
+                            <i class="fas fa-tshirt team-jersey" id="teamAJersey"></i>
+                        </div>
+                        <div class="team-name" id="teamAName">Team A</div>
+                    </div>
+                    <div class="team-score" id="teamAScore">0</div>
+                </div>
+                <div class="match-time-container">
+                    <div class="match-time" id="matchTime">00:00</div>
+                    <div class="injury-time" id="injuryTime" style="display: none;">+00:00</div>
+                    <div class="total-injury" id="totalInjury" style="display: none;">+00:00</div>
+                </div>
+                <div class="team-side">
+                    <div class="team-info">
+                        <div class="team-jersey-container">
+                            <i class="fas fa-tshirt team-jersey" id="teamBJersey"></i>
+                        </div>
+                        <div class="team-name" id="teamBName">Team B</div>
+                    </div>
+                    <div class="team-score" id="teamBScore">0</div>
+                </div>
             </div>
         </header>
         
@@ -53,6 +76,7 @@
                     <button class="action-btn red-btn" id="teamARedBtn">Red Card</button>
                     <button class="action-btn goal-btn" id="teamAGoalBtn">Goal</button>
                     <button class="action-btn sub-btn-a" id="teamASubBtn">Substitution</button>
+                    <!-- ปุ่ม Half-time Sub จะถูกเพิ่มเข้ามาที่นี่โดย JavaScript -->
                 </div>
                 <div class="team-content">
                     <div class="tab-container">
@@ -87,6 +111,7 @@
                     <button class="action-btn red-btn" id="teamBRedBtn">Red Card</button>
                     <button class="action-btn goal-btn" id="teamBGoalBtn">Goal</button>
                     <button class="action-btn sub-btn-b" id="teamBSubBtn">Substitution</button>
+                    <!-- ปุ่ม Half-time Sub จะถูกเพิ่มเข้ามาที่นี่โดย JavaScript -->
                 </div>
                 <div class="team-content">
                     <div class="tab-container">
