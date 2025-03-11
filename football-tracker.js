@@ -641,12 +641,12 @@ function saveHalfSummaryAsPdf(isFirstHalf) {
         // For second half, check if minutes are >= 45 (or in your case >= 2)
         if (!isFirstHalf) {
             const minutes = parseInt(timeStamp.split(':')[0]);
-            return minutes >= 2; // Adjust to 45 for full match time
+            return minutes >= 45; // Adjust to 45 for full match time
         }
         
         // For first half, check if minutes are < 45 (or in your case < 2)
         const minutes = parseInt(timeStamp.split(':')[0]);
-        return minutes < 2; // Adjust to 45 for full match time
+        return minutes < 45; // Adjust to 45 for full match time
     };
     
     // Filter cards for current half
