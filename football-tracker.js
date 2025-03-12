@@ -1387,35 +1387,44 @@ function initializeHalfTimeSubButtons() {
     }
 
     function startMatch() {
+        if (matchState.isMatchStarted) return;
+    
         matchState.isMatchStarted = true;
         
-        if (matchState.isHalfTime) {
-            // Starting second half
-            matchState.isHalfTime = false;
-            matchState.isFirstHalf = false;
-            
-            // Set elapsed time to start at 45:00
-            matchState.elapsedTime = "45:00";
-            const now = new Date();
-            matchState.startTime = new Date(now.getTime() - (45 * 60 * 1000)); // Set start time 45 minutes earlier
+        // ถ้าเป็นครึ่งหลัง เริ่มจาก 45:00
+        if (!matchState.isFirstHalf) {
+            if (!matchState.startTime) {
+                // ตั้งค่า startTime สำหรับครึ่งหลังโดยเริ่มที่ 45:00
+                matchState.startTime = new Date();
+                matchState.startTime.setSeconds(matchState.startTime.getSeconds() - (45 * 60)); // ลบ 45 นาทีเพื่อเริ่มที่ 45:00
+            }
         } else {
-            // Starting first half
+            // ครึ่งแรกเริ่มที่ 00:00
             matchState.startTime = new Date();
-            matchState.elapsedTime = "00:00";
-            matchState.isFirstHalf = true;
         }
-        
-        startTimers();
+    
+        matchTimer = setInterval(updateMatchTime, 1000);
+        startMatchBtn.style.display = 'none';
+        matchControlsEl.style.display = 'none';
+        injuryControlsEl.style.display = 'flex';
         updateUI();
         saveMatchData();
     }
 
-  function startSecondHalf() {
-    if (halfTimeModal && halfTimeModal.style.display === 'flex') {
+    function startSecondHalf() {
+        matchState.isFirstHalf = false;
+        matchState.isHalfTime = false;
+        matchState.isMatchStarted = true;
+        matchState.startTime = new Date();
+        matchState.startTime.setSeconds(matchState.startTime.getSeconds() - (45 * 60)); // เริ่มที่ 45:00
+        matchState.elapsedTime = "45:00";
+        matchState.totalInjurySeconds = 0; // รีเซ็ตเวลาบาดเจ็บสำหรับครึ่งหลัง
+        matchState.injuryTimePeriods = [];
+        matchTimer = setInterval(updateMatchTime, 1000);
         halfTimeModal.style.display = 'none';
+        updateUI();
+        saveMatchData();
     }
-    showSecondHalfConfirmDialog();
-}
     function startTimers() {
         clearInterval(matchTimer);
         clearInterval(injuryTimer);
@@ -1435,45 +1444,32 @@ function initializeHalfTimeSubButtons() {
 
     function updateMatchTime() {
         if (!matchState.startTime) return;
-        
+    
         const now = new Date();
-        const difference = now - matchState.startTime;
-        const totalSeconds = Math.floor(difference / 1000);
-        
-        // Calculate minutes and seconds
-        let minutes = Math.floor(totalSeconds / 60);
-        const seconds = totalSeconds % 60;
-        
-        // Check for half-time or end of match
-        if (matchState.isFirstHalf && minutes >= 45 && seconds >= 0 && !matchState.isInjuryTimeActive) {
-            // First half is over, stop timer and prepare for injury time
-            clearInterval(matchTimer);
-            minutes = 45; // Lock at 45:00
-            
-            // Check if we have injury time
-            if (matchState.totalInjurySeconds > 0) {
-                prepareInjuryTimeCountdown(matchState.totalInjurySeconds);
-            } else {
-                // No injury time, go directly to half-time
+        let elapsedSeconds = Math.floor((now - matchState.startTime) / 1000);
+    
+        // สำหรับครึ่งแรก จำกัดที่ 45:00 เว้นแต่จะมีเวลาบาดเจ็บ
+        if (matchState.isFirstHalf) {
+            if (elapsedSeconds >= matchState.currentHalfTime && !matchState.isAddingInjuryTime) {
                 endFirstHalf();
+                return;
             }
-        } else if (!matchState.isFirstHalf && minutes >= 90 && seconds >= 0 && !matchState.isInjuryTimeActive) {
-            // Second half is over, stop timer and prepare for injury time
-            clearInterval(matchTimer);
-            minutes = 90; // Lock at 90:00_45
-            
-            // Check if we have injury time
-            if (matchState.totalInjurySeconds > 0) {
-                prepareInjuryTimeCountdown(matchState.totalInjurySeconds);
-            } else {
-                // No injury time, end the match
+        } else {
+            // สำหรับครึ่งหลัง จำกัดที่ 90:00 เว้นแต่จะมีเวลาบาดเจ็บ
+            if (elapsedSeconds >= (90 * 60) && !matchState.isAddingInjuryTime) { // 90 นาทีรวมทั้งหมด
                 endMatch();
+                return;
             }
         }
-        
-        // Update the display
+    
+        const minutes = Math.floor(elapsedSeconds / 60);
+        const seconds = elapsedSeconds % 60;
         matchState.elapsedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
         matchTimeEl.textContent = matchState.elapsedTime;
+    
+        if (matchState.isAddingInjuryTime) {
+            updateInjuryCountdown();
+        }
     }
 
    function prepareInjuryTimeCountdown(seconds) {
@@ -1515,21 +1511,17 @@ function updateInjuryTimeCountdown() {
     
     injuryTimeEl.textContent = display;
 }
-
-    function endFirstHalf() {
-        // Clear timers and reset injury time data
-        clearInterval(matchTimer);
-        clearInterval(injuryTimer);
-        
-        // Show half-time summary before continuing
-        showHalfTimeSummary();
-        
-        // Note: The state changes below will be called after the user closes the summary
-        // matchState.isHalfTime = true;
-        // matchState.isMatchStarted = false;
-        // matchState.isInjuryTimeActive = false;
-        // ...etc
-    }
+function endFirstHalf() {
+    clearInterval(matchTimer);
+    clearInterval(injuryTimer);
+    
+    // ล็อกเวลาที่ 45:00
+    matchState.elapsedTime = "45:00";
+    matchState.isMatchStarted = false;
+    
+    // แสดงสรุปครึ่งแรก
+    showHalfTimeSummary();
+}
 
     function showHalfTimeDialog() {
         halfTimeModal.style.display = 'flex';
