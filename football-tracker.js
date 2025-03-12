@@ -883,10 +883,8 @@ function showResetConfirmDialog() {
         if (teamAJersey) teamAJersey.style.color = matchState.teamA.color;
         if (teamBJersey) teamBJersey.style.color = matchState.teamB.color;
         
-        teamAHeader.textContent = ""; // เอาชื่อทีมออก แต่ยังคงแถบสีไว้
-        teamAHeader.style.backgroundColor = matchState.teamA.color;
-        teamBHeader.textContent = ""; // เอาชื่อทีมออก แต่ยังคงแถบสีไว้
-        teamBHeader.style.backgroundColor = matchState.teamB.color;
+        teamAHeader.style.display = 'none'; // ซ่อนแถบสีทั้งหมด
+        teamBHeader.style.display = 'none'; // ซ่อนแถบสีทั้งหมด
         
         // อัปเดตคะแนนในส่วนหัว
         const teamAScoreEl = document.getElementById('teamAScore');
@@ -1004,7 +1002,7 @@ function showResetConfirmDialog() {
         startMatchBtn.innerHTML = '<i class="fas fa-play"></i> Start Match';
     }
     
-    renderTeamCards();
+     renderTeamCards();
     renderTeamSubstitutions();
 }
 
@@ -2448,7 +2446,7 @@ function updateInjuryTimeCountdown() {
         if (!matchState.isMatchStarted) {
             if (matchState.isHalfTime) {
                 return "Half-time Break";
-            } else if (!matchState.isFirstHalf && matchState.elapsedTime === "4:00") {
+            } else if (!matchState.isFirstHalf && matchState.elapsedTime === "90:00") {
                 return "Match Ended";
             } else {
                 return "Not Started";
