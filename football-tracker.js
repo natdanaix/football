@@ -239,12 +239,8 @@ function createSecondHalfConfirmModal() {
     });
     
     document.getElementById('confirmSecondHalfBtn').addEventListener('click', () => {
-        document.getElementById('secondHalfConfirmModal').style.display = 'none';
-        // ตั้งค่าให้แน่ใจว่าเริ่มครึ่งหลังที่ 45:00
-        matchState.isFirstHalf = false;
-        matchState.elapsedTime = "45:00";
-        matchState.startTime = new Date();
-        startMatch();
+        modal.style.display = 'none';
+        startMatch(); // เรียกใช้ฟังก์ชันเริ่มการแข่งขัน
     });
 }
     // Create half-time substitution buttons
@@ -602,7 +598,6 @@ function createHalfTimeSummaryModal() {
             matchState.isHalfTime = true;
             matchState.isMatchStarted = false;
             matchState.isInjuryTimeActive = false;
-            matchState.isFirstHalf = false; 
             matchState.isAddingInjuryTime = false;
             matchState.totalInjurySeconds = 0;
             matchState.injuryTimePeriods = [];
@@ -878,12 +873,6 @@ function showResetConfirmDialog() {
 
     // Modify the UI update function to always show Half-time Substitution buttons
     function updateUI() {
-        console.log("Current match state:", {
-            isFirstHalf: matchState.isFirstHalf,
-            isHalfTime: matchState.isHalfTime,
-            isMatchStarted: matchState.isMatchStarted,
-            elapsedTime: matchState.elapsedTime
-        });
         teamANameEl.textContent = matchState.teamA.name;
         teamBNameEl.textContent = matchState.teamB.name;
         
@@ -894,8 +883,9 @@ function showResetConfirmDialog() {
         if (teamAJersey) teamAJersey.style.color = matchState.teamA.color;
         if (teamBJersey) teamBJersey.style.color = matchState.teamB.color;
         
-        teamAHeader.style.display = 'none'; // ซ่อนแถบสีทั้งหมด
-        teamBHeader.style.display = 'none'; // ซ่อนแถบสีทั้งหมด
+        // ใช้สีทีมกับแถบส่วนหัว โดยไม่ต้องลบข้อความชื่อทีม
+        teamAHeader.style.backgroundColor = matchState.teamA.color;
+        teamBHeader.style.backgroundColor = matchState.teamB.color;
         
         // อัปเดตคะแนนในส่วนหัว
         const teamAScoreEl = document.getElementById('teamAScore');
@@ -954,68 +944,68 @@ function showResetConfirmDialog() {
         // แสดงเวลาการแข่งขัน
         matchTimeEl.textContent = matchState.elapsedTime;
     
-    if (matchState.isInjuryTimeActive) {
-        injuryTimeEl.textContent = matchState.currentInjuryTimeDisplay;
-        injuryTimeEl.style.display = 'block';
-        totalInjuryEl.style.display = 'none';
-        injuryBtn.classList.add('active');
-        injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Stop Injury Time';
-        injuryFab.classList.add('injury-active');
-        injuryFab.innerHTML = '<i class="fas fa-stopwatch"></i>';
-    } else if (matchState.totalInjurySeconds > 0) {
-        injuryTimeEl.style.display = 'none';
-        totalInjuryEl.textContent = getTotalInjuryTimeDisplay();
-        totalInjuryEl.style.display = 'block';
-        injuryBtn.classList.remove('active');
-        injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Injury Time';
-        injuryFab.classList.remove('injury-active');
-        injuryFab.innerHTML = '<i class="fas fa-stopwatch"></i>';
-    } else {
-        injuryTimeEl.style.display = 'none';
-        totalInjuryEl.style.display = 'none';
-        injuryBtn.classList.remove('active');
-        injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Injury Time';
-        injuryFab.classList.remove('injury-active');
-        injuryFab.innerHTML = '<i class="fas fa-stopwatch"></i>';
-    }
-    
-    // Show/hide control buttons based on match state
-    if (matchState.isMatchStarted && !matchState.isHalfTime) {
-        // When match is in progress
-        matchControlsEl.style.display = 'none';
-        
-        // Hide injury time button during injury time countdown
-        if (matchState.isAddingInjuryTime) {
-            injuryControlsEl.style.display = 'flex';
-            injuryFab.style.display = 'none';
-            injuryBtn.style.display = 'none'; // Hide injury time button
+        if (matchState.isInjuryTimeActive) {
+            injuryTimeEl.textContent = matchState.currentInjuryTimeDisplay;
+            injuryTimeEl.style.display = 'block';
+            totalInjuryEl.style.display = 'none';
+            injuryBtn.classList.add('active');
+            injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Stop Injury Time';
+            injuryFab.classList.add('injury-active');
+            injuryFab.innerHTML = '<i class="fas fa-stopwatch"></i>';
+        } else if (matchState.totalInjurySeconds > 0) {
+            injuryTimeEl.style.display = 'none';
+            totalInjuryEl.textContent = getTotalInjuryTimeDisplay();
+            totalInjuryEl.style.display = 'block';
+            injuryBtn.classList.remove('active');
+            injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Injury Time';
+            injuryFab.classList.remove('injury-active');
+            injuryFab.innerHTML = '<i class="fas fa-stopwatch"></i>';
         } else {
-            injuryControlsEl.style.display = 'flex';
-            injuryFab.style.display = 'flex';
-            injuryBtn.style.display = 'block'; // Show injury time button
+            injuryTimeEl.style.display = 'none';
+            totalInjuryEl.style.display = 'none';
+            injuryBtn.classList.remove('active');
+            injuryBtn.innerHTML = '<i class="fas fa-stopwatch"></i> Injury Time';
+            injuryFab.classList.remove('injury-active');
+            injuryFab.innerHTML = '<i class="fas fa-stopwatch"></i>';
         }
         
-        // Update button text for second half
-        if (!matchState.isFirstHalf) {
+        // Show/hide control buttons based on match state
+        if (matchState.isMatchStarted && !matchState.isHalfTime) {
+            // When match is in progress
+            matchControlsEl.style.display = 'none';
+            
+            // Hide injury time button during injury time countdown
+            if (matchState.isAddingInjuryTime) {
+                injuryControlsEl.style.display = 'flex';
+                injuryFab.style.display = 'none';
+                injuryBtn.style.display = 'none'; // Hide injury time button
+            } else {
+                injuryControlsEl.style.display = 'flex';
+                injuryFab.style.display = 'flex';
+                injuryBtn.style.display = 'block'; // Show injury time button
+            }
+            
+            // Update button text for second half
+            if (!matchState.isFirstHalf) {
+                startMatchBtn.innerHTML = '<i class="fas fa-play"></i> Start Second Half';
+            }
+        } else if (matchState.isHalfTime) {
+            // During half-time
+            matchControlsEl.style.display = 'flex';
+            injuryControlsEl.style.display = 'none';
+            injuryFab.style.display = 'none';
             startMatchBtn.innerHTML = '<i class="fas fa-play"></i> Start Second Half';
+        } else {
+            // Before match starts or after it ends
+            matchControlsEl.style.display = 'flex';
+            injuryControlsEl.style.display = 'none';
+            injuryFab.style.display = 'none';
+            startMatchBtn.innerHTML = '<i class="fas fa-play"></i> Start Match';
         }
-    } else if (matchState.isHalfTime) {
-        // During half-time
-        matchControlsEl.style.display = 'flex';
-        injuryControlsEl.style.display = 'none';
-        injuryFab.style.display = 'none';
-        startMatchBtn.innerHTML = '<i class="fas fa-play"></i> Start Second Half';
-    } else {
-        // Before match starts or after it ends
-        matchControlsEl.style.display = 'flex';
-        injuryControlsEl.style.display = 'none';
-        injuryFab.style.display = 'none';
-        startMatchBtn.innerHTML = '<i class="fas fa-play"></i> Start Match';
+        
+        renderTeamCards();
+        renderTeamSubstitutions();
     }
-    
-     renderTeamCards();
-    renderTeamSubstitutions();
-}
 
 // Modify the function to update substitution button states
 function updateSubstitutionButtonsState() {
@@ -1398,50 +1388,35 @@ function initializeHalfTimeSubButtons() {
     }
 
     function startMatch() {
-        if (matchState.isMatchStarted) return;
-        
         matchState.isMatchStarted = true;
         
-        // เพิ่มการตรวจสอบและแสดงข้อมูลเพื่อดีบัก
-        console.log("Starting match with isFirstHalf:", matchState.isFirstHalf);
-        
-        // ถ้าเป็นครึ่งหลัง เริ่มจาก 45:00
-        if (!matchState.isFirstHalf) {
-            console.log("Setting up second half time starting at 45:00");
-            // กำหนดให้ startTime เป็นเวลาปัจจุบันลบด้วย 45 นาที
-            matchState.startTime = new Date();
-            matchState.startTime.setMinutes(matchState.startTime.getMinutes() - 45);
-            // ตั้งค่า elapsedTime เริ่มต้นเป็น 45:00 เพื่อให้แน่ใจว่าจะแสดงเวลาถูกต้องทันที
+        if (matchState.isHalfTime) {
+            // Starting second half
+            matchState.isHalfTime = false;
+            matchState.isFirstHalf = false;
+            
+            // Set elapsed time to start at 45:00
             matchState.elapsedTime = "45:00";
+            const now = new Date();
+            matchState.startTime = new Date(now.getTime() - (45 * 60 * 1000)); // Set start time 45 minutes earlier
         } else {
-            // ครึ่งแรกเริ่มที่ 00:00
-            console.log("Setting up first half time starting at 00:00");
+            // Starting first half
             matchState.startTime = new Date();
             matchState.elapsedTime = "00:00";
+            matchState.isFirstHalf = true;
         }
         
-        matchTimer = setInterval(updateMatchTime, 1000);
-        startMatchBtn.style.display = 'none';
-        matchControlsEl.style.display = 'none';
-        injuryControlsEl.style.display = 'flex';
+        startTimers();
         updateUI();
         saveMatchData();
     }
 
-    function startSecondHalf() {
-        matchState.isFirstHalf = false;
-        matchState.isHalfTime = false;
-        matchState.isMatchStarted = true;
-        matchState.startTime = new Date();
-        matchState.startTime.setSeconds(matchState.startTime.getSeconds() - (45 * 60)); // เริ่มที่ 45:00
-        matchState.elapsedTime = "45:00";
-        matchState.totalInjurySeconds = 0; // รีเซ็ตเวลาบาดเจ็บสำหรับครึ่งหลัง
-        matchState.injuryTimePeriods = [];
-        matchTimer = setInterval(updateMatchTime, 1000);
+  function startSecondHalf() {
+    if (halfTimeModal && halfTimeModal.style.display === 'flex') {
         halfTimeModal.style.display = 'none';
-        updateUI();
-        saveMatchData();
     }
+    showSecondHalfConfirmDialog();
+}
     function startTimers() {
         clearInterval(matchTimer);
         clearInterval(injuryTimer);
@@ -1461,21 +1436,45 @@ function initializeHalfTimeSubButtons() {
 
     function updateMatchTime() {
         if (!matchState.startTime) return;
+        
         const now = new Date();
         const difference = now - matchState.startTime;
-        let totalSeconds = Math.floor(difference / 1000);
-        const baseTime = matchState.isFirstHalf ? 0 : 45 * 60; // เริ่มที่ 0 หรือ 45:00
-        totalSeconds += baseTime;
-        const minutes = Math.floor(totalSeconds / 60);
+        const totalSeconds = Math.floor(difference / 1000);
+        
+        // Calculate minutes and seconds
+        let minutes = Math.floor(totalSeconds / 60);
         const seconds = totalSeconds % 60;
+        
+        // Check for half-time or end of match
+        if (matchState.isFirstHalf && minutes >= 45 && seconds >= 0 && !matchState.isInjuryTimeActive) {
+            // First half is over, stop timer and prepare for injury time
+            clearInterval(matchTimer);
+            minutes = 45; // Lock at 45:00
+            
+            // Check if we have injury time
+            if (matchState.totalInjurySeconds > 0) {
+                prepareInjuryTimeCountdown(matchState.totalInjurySeconds);
+            } else {
+                // No injury time, go directly to half-time
+                endFirstHalf();
+            }
+        } else if (!matchState.isFirstHalf && minutes >= 90 && seconds >= 0 && !matchState.isInjuryTimeActive) {
+            // Second half is over, stop timer and prepare for injury time
+            clearInterval(matchTimer);
+            minutes = 90; // Lock at 90:00_45
+            
+            // Check if we have injury time
+            if (matchState.totalInjurySeconds > 0) {
+                prepareInjuryTimeCountdown(matchState.totalInjurySeconds);
+            } else {
+                // No injury time, end the match
+                endMatch();
+            }
+        }
+        
+        // Update the display
         matchState.elapsedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
         matchTimeEl.textContent = matchState.elapsedTime;
-    
-        if (!matchState.isFirstHalf && totalSeconds >= 90 * 60 && !matchState.isAddingInjuryTime) {
-            endMatch();
-        } else if (matchState.isFirstHalf && totalSeconds >= 45 * 60 && !matchState.isAddingInjuryTime) {
-            endFirstHalf();
-        }
     }
 
    function prepareInjuryTimeCountdown(seconds) {
@@ -1517,20 +1516,21 @@ function updateInjuryTimeCountdown() {
     
     injuryTimeEl.textContent = display;
 }
-function endFirstHalf() {
-    clearInterval(matchTimer);
-    clearInterval(injuryTimer);
-    
-    // ล็อกเวลาที่ 45:00
-    matchState.elapsedTime = "45:00";
-    matchState.isMatchStarted = false;
-    
-    // เพิ่มบรรทัดนี้เพื่อให้แน่ใจว่าได้ตั้งค่าเป็นครึ่งหลัง
-    matchState.isFirstHalf = false;
-    
-    // แสดงสรุปครึ่งแรก
-    showHalfTimeSummary();
-}
+
+    function endFirstHalf() {
+        // Clear timers and reset injury time data
+        clearInterval(matchTimer);
+        clearInterval(injuryTimer);
+        
+        // Show half-time summary before continuing
+        showHalfTimeSummary();
+        
+        // Note: The state changes below will be called after the user closes the summary
+        // matchState.isHalfTime = true;
+        // matchState.isMatchStarted = false;
+        // matchState.isInjuryTimeActive = false;
+        // ...etc
+    }
 
     function showHalfTimeDialog() {
         halfTimeModal.style.display = 'flex';
@@ -2447,7 +2447,7 @@ function endFirstHalf() {
         if (!matchState.isMatchStarted) {
             if (matchState.isHalfTime) {
                 return "Half-time Break";
-            } else if (!matchState.isFirstHalf && matchState.elapsedTime === "90:00") {
+            } else if (!matchState.isFirstHalf && matchState.elapsedTime === "4:00") {
                 return "Match Ended";
             } else {
                 return "Not Started";
