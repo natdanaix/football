@@ -439,11 +439,18 @@ function createSecondHalfConfirmModal() {
         });
     }
 }
-    function showSecondHalfConfirmDialog() {
+function showSecondHalfConfirmDialog() {
     const modal = document.getElementById('secondHalfConfirmModal');
     if (!modal) {
         createSecondHalfConfirmModal();
     }
+    
+    // ปรับข้อความเพื่อให้ชัดเจนว่าเวลาจะเริ่มจาก 45:00
+    const modalContent = document.querySelector('#secondHalfConfirmModal .modal-content p');
+    if (modalContent) {
+        modalContent.innerHTML = 'คุณพร้อมที่จะเริ่มการแข่งขันครึ่งหลังใช่หรือไม่? <br>เวลาจะเริ่มจาก 45:00 นาที';
+    }
+    
     document.getElementById('secondHalfConfirmModal').style.display = 'flex';
 }
 function showHalfTimeSummary() {
@@ -1391,16 +1398,19 @@ function initializeHalfTimeSubButtons() {
         matchState.isMatchStarted = true;
         
         if (matchState.isHalfTime) {
-            // Starting second half
+            // เริ่มครึ่งหลัง
             matchState.isHalfTime = false;
             matchState.isFirstHalf = false;
             
-            // Set elapsed time to start at 45:00
+            // ตั้งเวลาให้เริ่มที่ 45:00
             matchState.elapsedTime = "45:00";
+            
+            // ตั้งค่า startTime ให้เป็นเวลาปัจจุบันลบด้วย 45 นาที
+            // เพื่อให้เวลาแสดงผลเป็น 45:00 และเดินต่อจากนั้น
             const now = new Date();
-            matchState.startTime = new Date(now.getTime() - (45 * 60 * 1000)); // Set start time 45 minutes earlier
+            matchState.startTime = new Date(now.getTime() - (45 * 60 * 1000));
         } else {
-            // Starting first half
+            // เริ่มครึ่งแรก
             matchState.startTime = new Date();
             matchState.elapsedTime = "00:00";
             matchState.isFirstHalf = true;
@@ -1441,38 +1451,38 @@ function initializeHalfTimeSubButtons() {
         const difference = now - matchState.startTime;
         const totalSeconds = Math.floor(difference / 1000);
         
-        // Calculate minutes and seconds
+        // คำนวณนาทีและวินาที
         let minutes = Math.floor(totalSeconds / 60);
         const seconds = totalSeconds % 60;
         
-        // Check for half-time or end of match
+        // ตรวจสอบการจบครึ่งแรกหรือครึ่งหลัง
         if (matchState.isFirstHalf && minutes >= 45 && seconds >= 0 && !matchState.isInjuryTimeActive) {
-            // First half is over, stop timer and prepare for injury time
+            // ครึ่งแรกจบ, หยุดเวลาและเตรียมนับเวลาทดเจ็บ
             clearInterval(matchTimer);
-            minutes = 45; // Lock at 45:00
+            minutes = 45; // ล็อคที่ 45:00
             
-            // Check if we have injury time
+            // ตรวจสอบว่ามีเวลาทดเจ็บหรือไม่
             if (matchState.totalInjurySeconds > 0) {
                 prepareInjuryTimeCountdown(matchState.totalInjurySeconds);
             } else {
-                // No injury time, go directly to half-time
+                // ไม่มีเวลาทดเจ็บ, ไปที่พักครึ่งเลย
                 endFirstHalf();
             }
         } else if (!matchState.isFirstHalf && minutes >= 90 && seconds >= 0 && !matchState.isInjuryTimeActive) {
-            // Second half is over, stop timer and prepare for injury time
+            // ครึ่งหลังจบ, หยุดเวลาและเตรียมนับเวลาทดเจ็บ
             clearInterval(matchTimer);
-            minutes = 90; // Lock at 90:00_45
+            minutes = 90; // ล็อคที่ 90:00
             
-            // Check if we have injury time
+            // ตรวจสอบว่ามีเวลาทดเจ็บหรือไม่
             if (matchState.totalInjurySeconds > 0) {
                 prepareInjuryTimeCountdown(matchState.totalInjurySeconds);
             } else {
-                // No injury time, end the match
+                // ไม่มีเวลาทดเจ็บ, จบการแข่งขัน
                 endMatch();
             }
         }
         
-        // Update the display
+        // อัปเดตการแสดงผล
         matchState.elapsedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
         matchTimeEl.textContent = matchState.elapsedTime;
     }
@@ -2189,34 +2199,34 @@ function updateInjuryTimeCountdown() {
 
     function endMatch() {
         if (!matchState.isMatchStarted && !matchState.isAddingInjuryTime) {
-            alert('There is no match to end');
+            alert('ไม่มีการแข่งขันที่จะจบ');
             return;
         }
         clearInterval(matchTimer);
         clearInterval(injuryTimer);
         if (matchState.isInjuryTimeActive) toggleInjuryTime();
         
-        // Lock at 90:00 if we're in the second half (or 4:00 in your test case)
+        // ล็อคที่ 90:00 ถ้าเป็นครึ่งหลัง
         if (!matchState.isFirstHalf) {
-            matchState.elapsedTime = "90:00"; // Change to 90:00 in real game 45min
+            matchState.elapsedTime = "90:00"; // เปลี่ยนเป็น 90:00 ในเกมจริง
         }
         
         matchState.isMatchStarted = false;
         matchState.isAddingInjuryTime = false;
         
-        // Hide Injury Time buttons when the match ends
+        // ซ่อนปุ่ม Injury Time เมื่อจบการแข่งขัน
         injuryBtn.style.display = 'none';
         injuryFab.style.display = 'none';
         
         updateUI();
         saveMatchData();
         
-        // After second half, show the half-time summary first, then the full match summary
+        // หลังจากครึ่งหลัง แสดงสรุปครึ่งเวลาก่อน แล้วจึงแสดงสรุปการแข่งขันทั้งหมด
         if (!matchState.isFirstHalf) {
-            showHalfTimeSummary(); // Show second half summary
-            // The full match summary will be shown after closing the half summary
+            showHalfTimeSummary(); // แสดงสรุปครึ่งหลัง
+            // จะแสดงสรุปการแข่งขันทั้งหมดหลังจากปิดสรุปครึ่งเวลา
         } else {
-            showMatchSummary(); // If ending from first half directly
+            showMatchSummary(); // ถ้าจบโดยตรงจากครึ่งแรก
         }
     }
     function saveCurrentMatchAsPdf() {
