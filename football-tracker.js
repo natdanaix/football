@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Match state
+    // Match state2
     let matchState = {
         isMatchStarted: false,
         isFirstHalf: true,
