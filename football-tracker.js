@@ -243,6 +243,7 @@ function createSecondHalfConfirmModal() {
         // ตั้งค่าให้แน่ใจว่าเริ่มครึ่งหลังที่ 45:00
         matchState.isFirstHalf = false;
         matchState.elapsedTime = "45:00";
+        matchState.startTime = new Date();
         startMatch();
     });
 }
@@ -1460,31 +1461,20 @@ function initializeHalfTimeSubButtons() {
 
     function updateMatchTime() {
         if (!matchState.startTime) return;
-    
         const now = new Date();
-        let elapsedSeconds = Math.floor((now - matchState.startTime) / 1000);
-    
-        // สำหรับครึ่งแรก จำกัดที่ 45:00 เว้นแต่จะมีเวลาบาดเจ็บ
-        if (matchState.isFirstHalf) {
-            if (elapsedSeconds >= matchState.currentHalfTime && !matchState.isAddingInjuryTime) {
-                endFirstHalf();
-                return;
-            }
-        } else {
-            // สำหรับครึ่งหลัง จำกัดที่ 90:00 เว้นแต่จะมีเวลาบาดเจ็บ
-            if (elapsedSeconds >= (90 * 60) && !matchState.isAddingInjuryTime) { // 90 นาทีรวมทั้งหมด
-                endMatch();
-                return;
-            }
-        }
-    
-        const minutes = Math.floor(elapsedSeconds / 60);
-        const seconds = elapsedSeconds % 60;
+        const difference = now - matchState.startTime;
+        let totalSeconds = Math.floor(difference / 1000);
+        const baseTime = matchState.isFirstHalf ? 0 : 45 * 60; // เริ่มที่ 0 หรือ 45:00
+        totalSeconds += baseTime;
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
         matchState.elapsedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
         matchTimeEl.textContent = matchState.elapsedTime;
     
-        if (matchState.isAddingInjuryTime) {
-            updateInjuryCountdown();
+        if (!matchState.isFirstHalf && totalSeconds >= 90 * 60 && !matchState.isAddingInjuryTime) {
+            endMatch();
+        } else if (matchState.isFirstHalf && totalSeconds >= 45 * 60 && !matchState.isAddingInjuryTime) {
+            endFirstHalf();
         }
     }
 
