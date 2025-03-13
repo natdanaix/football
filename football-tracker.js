@@ -239,8 +239,11 @@ function createSecondHalfConfirmModal() {
     });
     
     document.getElementById('confirmSecondHalfBtn').addEventListener('click', () => {
-        modal.style.display = 'none';
-        startMatch(); // เรียกใช้ฟังก์ชันเริ่มการแข่งขัน
+        document.getElementById('secondHalfConfirmModal').style.display = 'none';
+        // ตั้งค่าให้แน่ใจว่าเริ่มครึ่งหลังที่ 45:00
+        matchState.isFirstHalf = false;
+        matchState.elapsedTime = "45:00";
+        startMatch();
     });
 }
     // Create half-time substitution buttons
@@ -598,6 +601,7 @@ function createHalfTimeSummaryModal() {
             matchState.isHalfTime = true;
             matchState.isMatchStarted = false;
             matchState.isInjuryTimeActive = false;
+            matchState.isFirstHalf = false; 
             matchState.isAddingInjuryTime = false;
             matchState.totalInjurySeconds = 0;
             matchState.injuryTimePeriods = [];
@@ -873,6 +877,12 @@ function showResetConfirmDialog() {
 
     // Modify the UI update function to always show Half-time Substitution buttons
     function updateUI() {
+        console.log("Current match state:", {
+            isFirstHalf: matchState.isFirstHalf,
+            isHalfTime: matchState.isHalfTime,
+            isMatchStarted: matchState.isMatchStarted,
+            elapsedTime: matchState.elapsedTime
+        });
         teamANameEl.textContent = matchState.teamA.name;
         teamBNameEl.textContent = matchState.teamB.name;
         
@@ -1388,21 +1398,27 @@ function initializeHalfTimeSubButtons() {
 
     function startMatch() {
         if (matchState.isMatchStarted) return;
-    
+        
         matchState.isMatchStarted = true;
+        
+        // เพิ่มการตรวจสอบและแสดงข้อมูลเพื่อดีบัก
+        console.log("Starting match with isFirstHalf:", matchState.isFirstHalf);
         
         // ถ้าเป็นครึ่งหลัง เริ่มจาก 45:00
         if (!matchState.isFirstHalf) {
-            if (!matchState.startTime) {
-                // ตั้งค่า startTime สำหรับครึ่งหลังโดยเริ่มที่ 45:00
-                matchState.startTime = new Date();
-                matchState.startTime.setSeconds(matchState.startTime.getSeconds() - (45 * 60)); // ลบ 45 นาทีเพื่อเริ่มที่ 45:00
-            }
+            console.log("Setting up second half time starting at 45:00");
+            // กำหนดให้ startTime เป็นเวลาปัจจุบันลบด้วย 45 นาที
+            matchState.startTime = new Date();
+            matchState.startTime.setMinutes(matchState.startTime.getMinutes() - 45);
+            // ตั้งค่า elapsedTime เริ่มต้นเป็น 45:00 เพื่อให้แน่ใจว่าจะแสดงเวลาถูกต้องทันที
+            matchState.elapsedTime = "45:00";
         } else {
             // ครึ่งแรกเริ่มที่ 00:00
+            console.log("Setting up first half time starting at 00:00");
             matchState.startTime = new Date();
+            matchState.elapsedTime = "00:00";
         }
-    
+        
         matchTimer = setInterval(updateMatchTime, 1000);
         startMatchBtn.style.display = 'none';
         matchControlsEl.style.display = 'none';
@@ -1518,6 +1534,9 @@ function endFirstHalf() {
     // ล็อกเวลาที่ 45:00
     matchState.elapsedTime = "45:00";
     matchState.isMatchStarted = false;
+    
+    // เพิ่มบรรทัดนี้เพื่อให้แน่ใจว่าได้ตั้งค่าเป็นครึ่งหลัง
+    matchState.isFirstHalf = false;
     
     // แสดงสรุปครึ่งแรก
     showHalfTimeSummary();
